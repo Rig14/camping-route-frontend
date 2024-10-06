@@ -1,3 +1,7 @@
+# wierd ts configuration files made when building application
+tsconfig.app.tsbuildinfo
+tsconfig.node.tsbuildinfo
+
 # Logs
 logs
 *.log
