@@ -1,0 +1,32 @@
+stages:
+  - build
+  - deploy
+
+build-vite-app:
+  stage: build
+  image: node:16
+  script:
+    - npm ci # does a clean installation of packages
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 30 days
+
+deploy-vite-app: # will only run on push to main
+  stage: deploy
+  image: alpine:latest
+  needs:
+    - job: build-vite-app
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  before_script: # install required packages to enable SSH into server
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - scp -o StrictHostKeyChecking=no -r ./dist ubuntu@193.40.255.42:/tmp
+    - ssh -o StrictHostKeyChecking=no ubuntu@193.40.255.42 "sudo rm -rf /var/www/html/* && sudo mv -v /tmp/dist/* /var/www/html && sudo rm -rf /tmp/dist"
