@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from 'vue'
 
 defineProps<{ msg: string }>()
@@ -15,6 +15,7 @@ const count = ref(0)
       Edit
       <code>components/HelloWorld.vue</code> to test HMR
     </p>
+    <p>test string for ci</p>
   </div>
 
   <p>
