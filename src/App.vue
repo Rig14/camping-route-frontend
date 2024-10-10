@@ -1,15 +1,36 @@
 <script setup lang="ts">
 import {inject, onMounted, ref} from "vue";
+import {CampingRouteDto} from "./types/dto/CampingRouteDto.ts";
+import {Axios} from "axios";
 
-const routes = ref([]);
-const axios = inject('axios')
-const route = ref({
-  id: -1,
+const axios = inject<Axios>('axios')
+if (axios === undefined) {
+  throw new Error("Axios is not injected")
+}
+
+const routes = ref<CampingRouteDto[]>([]);
+const route = ref<CampingRouteDto>({
   name: '',
   description: '',
   location: '',
   thumbnailUrl: '',
 });
+
+const fetchRoutes = async () => {
+  try {
+    const response = await axios.get<CampingRouteDto[]>('/api/camping_routes');
+    routes.value = response.data.map(route =>  ({
+      id: route.id,
+      name: route.name,
+      description: route.description,
+      location: route.location,
+      thumbnailUrl: route.thumbnailUrl,
+    }))
+  } catch (error){
+    console.error("Error fetching camping routes: " + error);
+  }
+}
+
 const submitForm = async () => {
   try {
     const response = await axios.post('/api/camping_routes', route.value);
@@ -21,25 +42,12 @@ const submitForm = async () => {
       location: '',
       thumbnailUrl: ''
     };
+    await fetchRoutes()
   } catch (error) {
     console.error('Error adding camping route:', error);
   }
 };
 
-const fetchRoutes = async () => {
-  try {
-    const response = await axios.get('/api/camping_routes');
-    routes.value = response.data.map(route =>  ({
-      id: route.id,
-      name: route.name,
-      description: route.description,
-      location: route.location,
-      thumbnailUrl: route.thumbnailUrl,
-    }))
-  } catch (err){
-    console.error("Error fetching camping routes: " + err.message);
-  }
-}
 onMounted(fetchRoutes())
 </script>
 

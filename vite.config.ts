@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: process.env.NODE_ENV === "production" ? 'http://localhost:8080' : "http://matkarajad.zapto.org/",
         changeOrigin: true,
         secure: false,
       }
