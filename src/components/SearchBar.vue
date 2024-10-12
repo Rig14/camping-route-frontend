@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {useRouter} from "vue-router";
+import {LocationQueryRaw, useRouter} from "vue-router";
 
 const router = useRouter();
 const searchedValue = ref<String>("");
 
 const search = () => {
   try {
+    const query: LocationQueryRaw = {};
+    query.find = searchedValue.value.trim();
+
     router.push({
       name: "SearchResults",
-      query: {
-        q: searchedValue.value,
-      }
-    })
+      query
+    });
   } catch (error) {
     console.log("Error while searching routes: " + error);
   }

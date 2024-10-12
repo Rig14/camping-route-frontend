@@ -33,12 +33,12 @@ const fetchSearchResults = async (query: string) => {
 };
 
 onMounted(() => {
-  if (route.query.q) {
-    fetchSearchResults(route.query.q as string);
+  if (route.query.find) {
+    fetchSearchResults(route.query.find as string);
   }
 });
 
-watch(() => route.query.q, (newQuery) => {
+watch(() => route.query.find, (newQuery) => {
   if (newQuery) {
     fetchSearchResults(newQuery as string);
   }
