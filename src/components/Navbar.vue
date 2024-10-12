@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import SearchBar from "./SearchBar.vue";
 
 const isMenuOpen = ref(false);
 
@@ -17,6 +18,7 @@ const toggleMenu = () => {
             <h2 class="text-3xl">Matkarajad</h2>
           </RouterLink>
         </div>
+        <SearchBar />
         <div class="hidden md:block">
             <RouterLink to="/add_route" class="px-3 py-2 rounded-md text-sm text-white font-medium hover:bg-green-900">Lisa radasid</RouterLink>
         </div>
@@ -31,6 +33,7 @@ const toggleMenu = () => {
     </div>
     <div :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" class="md:hidden">
       <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <RouterLink to="/add_route" class="px-3 py-2 rounded-md text-sm text-white font-medium hover:bg-green-900">Lisa radasid</RouterLink>
       </div>
     </div>
   </nav>
