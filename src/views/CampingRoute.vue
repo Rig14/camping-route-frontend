@@ -41,8 +41,6 @@ const fetchComments = async () => {
 
 
 const submitComment = async () => {
-  if (commentContent.value.trim() === '') return;
-
   try {
     await addComment(commentContent.value);
     commentContent.value = '';
@@ -58,7 +56,7 @@ const addComment = async (content: string) => {
   try {
     const response = await axios.post(`/api/camping_routes/comments/${route.params.id}`, { content });
     if (response.status === 201) {
-      comments.value.push(content);
+      comments.value.push(response.data);
     }
   } catch (error) {
     console.error("Error posting the comment: " + error);
