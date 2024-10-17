@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {inject, onMounted, ref} from "vue";
+import {inject, onMounted, Ref, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
 import {Axios, HttpStatusCode} from "axios";
@@ -7,7 +7,8 @@ import {useRoute, useRouter} from "vue-router";
 import {CommentDto} from "../types/dto/CommentDto";
 import CommentCard from "../components/CommentCard.vue";
 
-const axios = inject<Axios>('axios')
+const axios = inject<Axios>('axios');
+const errorNotification = inject("error") as Ref<string>;
 if (axios === undefined) {
   throw new Error("Axios is not injected")
 }
@@ -22,7 +23,7 @@ const fetchRoute = async () => {
     const response = await axios.get<CampingRouteDto>(`/api/camping_routes/${route.params.id}`);
     campingRoute.value = response.data;
   } catch (error){
-    console.error("Error fetching camping route: " + error);
+    errorNotification.value = String(error);
   }
 }
 
@@ -35,6 +36,7 @@ const fetchComments = async () => {
       console.error("Expected an array, but got:", response.data);
     }
   } catch (error) {
+    errorNotification.value = String(error);
     console.error("Error fetching comments: " + error);
   }
 }
@@ -48,6 +50,7 @@ const submitComment = async () => {
 
     await fetchComments();
   } catch (error) {
+    errorNotification.value = String(error);
     console.error("Error posting the comment: ", error);
   }
 };
@@ -59,6 +62,7 @@ const addComment = async (content: string) => {
       comments.value.push(response.data);
     }
   } catch (error) {
+    errorNotification.value = String(error);
     console.error("Error posting the comment: " + error);
   }
 }
@@ -67,16 +71,16 @@ const toggleCommentForm = () => {
   showCommentForm.value = !showCommentForm.value;
 };
 
-const failMessage = ref<string>();
 const deleteRoute = async () => {
   try {
     const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
     if (response.status === 204) {
       await router.push("/")
-    } else if (response.status == 404) {
-      failMessage.value = "Matkarada ei kustutatud."
+    } else {
+      errorNotification.value = response.data.toString();
     }
   } catch (error){
+    errorNotification.value = String(error);
     console.error("Error fetching camping route: " + error);
   }
 }
@@ -94,10 +98,6 @@ onMounted(() => {
   <div v-if="campingRoute">
     <CampingRouteCard :camping-route="campingRoute" />
     <button class="text-red-400" @click="deleteRoute()">Delete</button>
-    <div v-if="failMessage">
-      <p>{{failMessage}}</p>
-    </div>
-
     <button @click="toggleCommentForm">
       {{ showCommentForm ? 'Cancel' : 'Add Comment' }}
     </button>
