@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { inject, ref, watch } from 'vue'
+import {inject, Ref, ref, watch} from 'vue'
 
-const provided = inject('error');
+const provided = inject('error') as Ref<string>;
 const queue = ref<string[]>([]);
-const message = ref("");
+const message = ref<string>("");
 
 
 watch(provided, (newValue) => {

@@ -18,6 +18,7 @@ const route = ref<CampingRouteDto>({
 const submitForm = async () => {
   try {
     const response = await axios.post('/api/camping_routes', route.value);
+    console.log('Added camping route:', response.data);
     route.value = {
       name: '',
       description: '',
