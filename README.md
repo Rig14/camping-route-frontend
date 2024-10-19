@@ -1,5 +1,12 @@
-# Vue 3 + TypeScript + Vite
+# Matkarajad
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Matkarajad frontend repository.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Running the frontend
+For locally running the frontend, it is enough to just run the `npm run dev` command in terminal.
+It will automatically connect to our backend that is running on the server, if there is no backend running on the local host.
+
+## Building the frontend
+For building our frontend just run the `npm run build`.
+
+The built application will be under ***dist/*** directory.
