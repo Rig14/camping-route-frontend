@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Navbar from "./components/Navbar.vue";
 import ErrorNotification from "./components/ErrorNotification.vue";
+import {Axios} from "axios";
 import {inject, Ref} from "vue";
 
 const errorNotification = inject('error') as Ref<string>;

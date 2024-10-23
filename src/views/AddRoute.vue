@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {inject, Ref, ref} from "vue";
+import {inject, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import {Axios} from "axios";
 

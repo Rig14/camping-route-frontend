@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import {ref, onMounted, watch, Ref} from 'vue';
-import { useRoute } from 'vue-router';
-import { Axios } from "axios";
-import { inject } from "vue";
-import { CampingRouteDto } from "../types/dto/CampingRouteDto";
+import {inject, onMounted, ref, watch} from 'vue';
+import {useRoute} from 'vue-router';
+import {Axios} from "axios";
+import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
 
 const route = useRoute();
