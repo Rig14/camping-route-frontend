@@ -3,7 +3,6 @@ import {inject, Ref, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import {Axios} from "axios";
 
-const errorNotification = inject('error') as Ref<string>;
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected")
@@ -27,7 +26,6 @@ const submitForm = async () => {
       thumbnailUrl: ''
     };
   } catch (error) {
-    errorNotification.value = String(error);
     console.error('Error adding camping route:', error);
   }
 };

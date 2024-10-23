@@ -4,7 +4,6 @@ import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
 import {Axios} from "axios";
 
-const errorNotification = inject('error') as Ref<string>;
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected");
@@ -17,7 +16,6 @@ const fetchRoutes = async () => {
     const response = await axios.get<CampingRouteDto[]>('/api/camping_routes');
     routes.value = response.data;
   } catch (error){
-    errorNotification.value = String(error);
     console.error("Error fetching camping routes: " + error);
   }
 }

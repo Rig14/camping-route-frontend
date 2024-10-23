@@ -7,7 +7,6 @@ import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
 
 const route = useRoute();
-const errorNotification = inject('error') as Ref<string>;
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected");
@@ -24,7 +23,6 @@ const fetchSearchResults = async (query: string) => {
     });
     searchResults.value = response.data;
   } catch (error) {
-    errorNotification.value = "An error occurred while fetching search results. Please try again.";
     console.error("Error fetching search results:", error);
   } finally {
     isLoading.value = false;

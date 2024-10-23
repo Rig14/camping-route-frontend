@@ -8,7 +8,6 @@ import {CommentDto} from "../types/dto/CommentDto";
 import CommentCard from "../components/CommentCard.vue";
 
 const axios = inject<Axios>('axios');
-const errorNotification = inject("error") as Ref<string>;
 if (axios === undefined) {
   throw new Error("Axios is not injected")
 }
@@ -23,7 +22,7 @@ const fetchRoute = async () => {
     const response = await axios.get<CampingRouteDto>(`/api/camping_routes/${route.params.id}`);
     campingRoute.value = response.data;
   } catch (error){
-    errorNotification.value = String(error);
+    console.error("Error fetching route: " + error);
   }
 }
 
@@ -36,7 +35,6 @@ const fetchComments = async () => {
       console.error("Expected an array, but got:", response.data);
     }
   } catch (error) {
-    errorNotification.value = String(error);
     console.error("Error fetching comments: " + error);
   }
 }
@@ -50,7 +48,6 @@ const submitComment = async () => {
 
     await fetchComments();
   } catch (error) {
-    errorNotification.value = String(error);
     console.error("Error posting the comment: ", error);
   }
 };
@@ -62,7 +59,6 @@ const addComment = async (content: string) => {
       comments.value.push(response.data);
     }
   } catch (error) {
-    errorNotification.value = String(error);
     console.error("Error posting the comment: " + error);
   }
 }
@@ -76,11 +72,8 @@ const deleteRoute = async () => {
     const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
     if (response.status === 204) {
       await router.push("/")
-    } else {
-      errorNotification.value = response.data.toString();
     }
   } catch (error){
-    errorNotification.value = String(error);
     console.error("Error fetching camping route: " + error);
   }
 }
