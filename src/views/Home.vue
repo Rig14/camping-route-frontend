@@ -4,9 +4,9 @@ import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
 import {Axios} from "axios";
 
-const axios = inject<Axios>('axios')
+const axios = inject<Axios>('axios');
 if (axios === undefined) {
-  throw new Error("Axios is not injected")
+  throw new Error("Axios is not injected");
 }
 
 const routes = ref<CampingRouteDto[]>([]);

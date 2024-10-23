@@ -7,7 +7,7 @@ import {useRoute, useRouter} from "vue-router";
 import {CommentDto} from "../types/dto/CommentDto";
 import CommentCard from "../components/CommentCard.vue";
 
-const axios = inject<Axios>('axios')
+const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected")
 }
@@ -22,7 +22,7 @@ const fetchRoute = async () => {
     const response = await axios.get<CampingRouteDto>(`/api/camping_routes/${route.params.id}`);
     campingRoute.value = response.data;
   } catch (error){
-    console.error("Error fetching camping route: " + error);
+    console.error("Error fetching route: " + error);
   }
 }
 
@@ -67,14 +67,11 @@ const toggleCommentForm = () => {
   showCommentForm.value = !showCommentForm.value;
 };
 
-const failMessage = ref<string>();
 const deleteRoute = async () => {
   try {
     const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
     if (response.status === 204) {
       await router.push("/")
-    } else if (response.status == 404) {
-      failMessage.value = "Matkarada ei kustutatud."
     }
   } catch (error){
     console.error("Error fetching camping route: " + error);
@@ -94,10 +91,6 @@ onMounted(() => {
   <div v-if="campingRoute">
     <CampingRouteCard :camping-route="campingRoute" />
     <button class="text-red-400" @click="deleteRoute()">Delete</button>
-    <div v-if="failMessage">
-      <p>{{failMessage}}</p>
-    </div>
-
     <button @click="toggleCommentForm">
       {{ showCommentForm ? 'Cancel' : 'Add Comment' }}
     </button>

@@ -3,7 +3,7 @@ import {inject, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import {Axios} from "axios";
 
-const axios = inject<Axios>('axios')
+const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected")
 }
@@ -19,7 +19,6 @@ const submitForm = async () => {
   try {
     const response = await axios.post('/api/camping_routes', route.value);
     console.log('Added camping route:', response.data);
-    // Reset the form after successful submission
     route.value = {
       name: '',
       description: '',
