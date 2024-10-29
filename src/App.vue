@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import Navbar from "./components/Navbar.vue";
 import ErrorNotification from "./components/ErrorNotification.vue";
 import {Axios} from "axios";
@@ -12,7 +12,7 @@ if (axios === undefined) {
 
 axios.interceptors.response.use((response) => response,
     (error) => {
-      errorNotification.value = String(error);
+      errorNotification.value = String(error.message);
     }
 )
 </script>
