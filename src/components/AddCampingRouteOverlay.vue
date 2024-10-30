@@ -2,6 +2,9 @@
 import {inject, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto.ts";
 import {Axios} from "axios";
+import {useRouter} from "vue-router";
+
+const router = useRouter();
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
@@ -54,6 +57,11 @@ const submitForm = async () => {
     )
     console.log('Added images for the route. Status: ', imagesResponse.status);
 
+    if (response.status === 200 && imagesResponse.status === 200) {
+      toggleOverlay()
+    } else {
+      console.error("Something went wrong when uploading new camping route")
+    }
   } catch (error) {
     console.error('Error adding camping route:', error);
   }
@@ -73,6 +81,12 @@ function handleAddImage(e: Event) {
     imagesAsURLs.value.push(URL.createObjectURL(file))
   }
 }
+
+function deleteImage(image: string) {
+  const index = imagesAsURLs.value.findIndex(e => e == image);
+  imagesAsURLs.value.splice(index, 1)
+  images.value.splice(index, 1)
+}
 </script>
 
 <template>
@@ -80,18 +94,22 @@ function handleAddImage(e: Event) {
     <slot />
   </button>
   <dialog ref="overlay">
-    <div class="max-w-96">
-      <button @click="toggleOverlay"><img alt="Sulgemise nupu ikoon" src="/x.svg"></button>
+    <div class="flex flex-col max-w-96 min-w-80 bg-emerald-800 rounded p-2">
+      <div class="flex flex-row">
+        <button class="p-1 ml-auto bg-emerald-800 transition hover:bg-emerald-600" @click="toggleOverlay"><img alt="Sulgemise nupu ikoon" src="/x.svg"></button>
+      </div>
+
+      <h1 class="text-xl">Lisa uus matkarada</h1>
 
       <form @submit.prevent="submitForm">
-        <div class="flex flex-col gap-5">
-          <input v-model="route.name" placeholder="Nimi" required type="text">
-          <input v-model="route.description" placeholder="Kirjeldus" required type="text">
-          <input v-model="route.location" placeholder="Asukoht" required type="text">
+        <div class="flex flex-col gap-5 ml-2 mr-2 mt-2">
+          <input v-model="route.name" class="rounded p-2" placeholder="Nimi" required type="text">
+          <input v-model="route.description" class="rounded p-2" placeholder="Kirjeldus" required type="text">
+          <input v-model="route.location" class="rounded p-2" placeholder="Asukoht" required type="text">
         </div>
 
-        <div class="flex items-center justify-center w-full">
-          <label class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600" for="dropzone-file">
+        <div class="flex items-center justify-center w-full mt-4 mb-4">
+          <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600" for="dropzone-file">
             <div class="flex flex-col items-center justify-center pt-5 pb-6">
               <svg aria-hidden="true" class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg">
                 <path d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
@@ -111,11 +129,16 @@ function handleAddImage(e: Event) {
         </div>
 
 
-        <button type="submit">Send</button>
+        <button class="mb-4" type="submit">Loo uus matkarada</button>
       </form>
 
       <div class="grid grid-cols-5 gap-2">
-        <img v-for="image in imagesAsURLs" :src="image" alt="image">
+        <div v-for="image in imagesAsURLs" class="relative">
+          <button class="absolute -left-2 -top-2 p-0 bg-red-700 rounded-3xl" @click="deleteImage(image)">
+            <img alt="eemalda pilt ikoon" class="w-4 h-4" src="/x.svg">
+          </button>
+          <img :src="image" alt="image">
+        </div>
       </div>
     </div>
   </dialog>
