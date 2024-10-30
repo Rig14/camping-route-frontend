@@ -2,9 +2,6 @@
 import {inject, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto.ts";
 import {Axios} from "axios";
-import {useRouter} from "vue-router";
-
-const router = useRouter();
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
