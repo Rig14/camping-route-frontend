@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import {inject, onMounted, ref} from "vue";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
@@ -6,6 +6,7 @@ import {Axios, HttpStatusCode} from "axios";
 import {useRoute, useRouter} from "vue-router";
 import {CommentDto} from "../types/dto/CommentDto";
 import CommentCard from "../components/CommentCard.vue";
+import {getImageUrlsForId} from "../util/images.ts";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
@@ -13,6 +14,7 @@ if (axios === undefined) {
 }
 
 const campingRoute = ref<CampingRouteDto>();
+const campingRouteImageURLs = ref<string[]>([]);
 const comments = ref<CommentDto[]>([]);
 const route = useRoute();
 const router = useRouter();
@@ -39,6 +41,9 @@ const fetchComments = async () => {
   }
 }
 
+const fetchCampingRouteImages = async () => {
+  campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios)
+}
 
 const submitComment = async () => {
   try {
@@ -70,7 +75,9 @@ const toggleCommentForm = () => {
 const deleteRoute = async () => {
   try {
     const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
-    if (response.status === 204) {
+    // delete related images
+    const deleteImagesResponse = await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`)
+    if (response.status === 204 && deleteImagesResponse.status === 204) {
       await router.push("/")
     }
   } catch (error){
@@ -84,12 +91,13 @@ const commentContent = ref<string>('');
 onMounted(() => {
   fetchRoute();
   fetchComments();
+  fetchCampingRouteImages();
 });
 </script>
 
 <template>
   <div v-if="campingRoute">
-    <CampingRouteCard :camping-route="campingRoute" />
+    <CampingRouteCard :camping-route="campingRoute" :image-urls="campingRouteImageURLs" />
     <button class="text-red-400" @click="deleteRoute()">Delete</button>
     <button @click="toggleCommentForm">
       {{ showCommentForm ? 'Cancel' : 'Add Comment' }}
@@ -100,9 +108,9 @@ onMounted(() => {
       <form @submit.prevent="submitComment">
         <input
             v-model="commentContent"
-            type="text"
             placeholder="Enter your comment"
             required
+            type="text"
         />
         <button type="submit">Submit</button>
       </form>
