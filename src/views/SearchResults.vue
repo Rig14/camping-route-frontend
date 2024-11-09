@@ -18,7 +18,7 @@ const isLoading = ref(false);
 const fetchSearchResults = async (query: string) => {
   isLoading.value = true;
   try {
-    const response = await axios.get<CampingRouteDto[]>('/api/camping_routes', {
+    const response = await axios.get<CampingRouteDto[]>('/api/public/camping_routes', {
       params: { name: query, location: query }
     });
     for (let i = 0; i < response.data.length; i++) {

@@ -14,7 +14,7 @@ const routes = ref<{images: string[], route: CampingRouteDto}[]>([]);
 
 const fetchRoutes = async () => {
   try {
-    const response = await axios.get<CampingRouteDto[]>('/api/camping_routes');
+    const response = await axios.get<CampingRouteDto[]>('/api/public/camping_routes');
     for (let i = 0; i < response.data.length; i++) {
       const route = response.data[i];
       if (route.id === undefined) continue;

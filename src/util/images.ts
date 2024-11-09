@@ -4,9 +4,9 @@ import {Axios} from "axios";
 export async function getImageUrlsForId(id: string | number, axios: Axios): Promise<string[]> {
     try {
         const campingRouteImageURLs: string[] = []
-        const responseNames = await axios.get<CampingRouteImageNamesDto>(`/api/camping_routes/images/${id}`)
+        const responseNames = await axios.get<CampingRouteImageNamesDto>(`/api/public/camping_routes/images/${id}`)
         responseNames.data.imageNames.forEach((name => {
-            campingRouteImageURLs.push(`/api/camping_routes/images/${id}/${name}`)
+            campingRouteImageURLs.push(`/api/public/camping_routes/images/${id}/${name}`)
         }))
         return campingRouteImageURLs;
     } catch (error) {
