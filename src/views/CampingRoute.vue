@@ -21,7 +21,7 @@ const router = useRouter();
 
 const fetchRoute = async () => {
   try {
-    const response = await axios.get<CampingRouteDto>(`/api/camping_routes/${route.params.id}`);
+    const response = await axios.get<CampingRouteDto>(`/api/public/camping_routes/${route.params.id}`);
     campingRoute.value = response.data;
   } catch (error){
     console.error("Error fetching route: " + error);
@@ -30,7 +30,7 @@ const fetchRoute = async () => {
 
 const fetchComments = async () => {
   try {
-    const response = await axios.get<CommentDto[]>(`/api/camping_routes/comments/${route.params.id}`);
+    const response = await axios.get<CommentDto[]>(`/api/public/camping_routes/comments/${route.params.id}`);
     if (Array.isArray(response.data)) {
       comments.value = response.data;
     } else {
