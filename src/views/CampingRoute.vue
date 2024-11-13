@@ -75,10 +75,11 @@ const toggleCommentForm = () => {
 const deleteRoute = async () => {
   try {
     const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
-    // delete related images
-    const deleteImagesResponse = await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`)
-    if (response.status === 204 && deleteImagesResponse.status === 204) {
-      await router.push("/")
+    if (response.status === 204) {
+      const deleteImagesResponse = await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`)
+      if (deleteImagesResponse.status === 204) {
+        await router.push("/")
+      }
     }
   } catch (error){
     console.error("Error fetching camping route: " + error);
