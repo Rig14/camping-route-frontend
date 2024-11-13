@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, inject, defineEmits } from 'vue';
+import { ref, reactive, inject } from 'vue';
 import { Axios } from "axios";
 import { CampingRouteDto } from "../types/dto/CampingRouteDto.ts";
 
@@ -19,34 +19,39 @@ const routeForm = reactive<CampingRouteDto>({
 
 const images = ref<File[]>([]);
 const imagesAsURLs = ref<string[]>([]);
+const formError = ref<string | null>(null);
 
 const handleAddImage = (e: Event) => {
   const fileList = (e.target as HTMLInputElement).files;
 
   // get all files that user has added
   if (fileList) {
-    for(const element of fileList) {
+    for (const element of fileList) {
       const file = element;
       images.value.push(file);
       imagesAsURLs.value.push(URL.createObjectURL(file));
     }
+    formError.value = null;
   }
 };
 
 const submitForm = async () => {
+  if (images.value.length === 0) {
+    formError.value = "Palun lisa vähemalt 1 pilt.";
+    return;
+  }
+
   try {
     // upload data about the camping route
     const response = await axios.post('/api/camping_routes', routeForm);
 
-
     // upload images for the camping route
     const formData = new FormData();
     images.value.forEach(image => formData.append("files", image));
-    const imagesResponse = await axios.post(`/api/camping_routes/images/${response.data.id}`, formData);
+    await axios.post(`/api/camping_routes/images/${response.data.id}`, formData);
 
-    if (response.status === 200 && imagesResponse.status === 200) {
-      emit('close');
-    }
+    emit('close');
+    location.reload();
   } catch (error) {
     console.error('Error adding camping route:', error);
   }
@@ -98,7 +103,7 @@ function deleteImage(imageUrl: string) {
             required
         />
 
-        <label for="" class="block text-center text-gray-400">Lisa pildid</label>
+        <label for="" class="block text-center text-white">Lisa pildid</label>
         <div class="relative border-2 border-dashed rounded-lg p-4 bg-gray-700 cursor-pointer">
           <input
               type="file"
@@ -109,6 +114,8 @@ function deleteImage(imageUrl: string) {
           />
           <p class="text-gray-400 text-center">Vali või lohista pildid siia (SVG, PNG, JPG, JPEG)</p>
         </div>
+
+        <p v-if="formError" class="text-red-500 text-sm mt-2 text-center">{{ formError }}</p>
 
         <div class="grid grid-cols-5 gap-2 mt-4">
           <div v-for="image in imagesAsURLs" :key="image" class="relative">
