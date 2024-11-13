@@ -4,7 +4,7 @@ import ErrorNotification from "./components/ErrorNotification.vue";
 import {Axios, AxiosError} from "axios";
 import {inject, Ref} from "vue";
 import {ExceptionResponse} from "./types/ErrorResponse.ts";
-import {useAuthStore} from "./stores/authStore.ts";
+import {useAuth} from "./composables/useAuth.ts";
 
 const errorNotification = inject('error') as Ref<string>;
 const axios = inject<Axios>('axios')
@@ -15,12 +15,11 @@ if (axios === undefined) {
 axios.interceptors.response.use(
     (response) => response,
     (error: AxiosError<ExceptionResponse>) => {
-      const authStore = useAuthStore();
+      const { logout } = useAuth();
 
       if (error.response) {
-        if (error.response.status === 401 || error.response.status === 403) {
-          authStore.clearToken();
-          window.location.href = '/';
+        if (error.response.status === 403) {
+          logout();
         }
 
         if (error.response.data) {
