@@ -1,17 +1,19 @@
-import { defineStore } from 'pinia'
-import axios, { AxiosResponse } from 'axios'
-import {UserDto} from "../types/dto/UserDto.ts";
-import {VerificationDto} from "../types/dto/VerificationDto.ts";
+import { defineStore } from 'pinia';
+import axios, { AxiosResponse } from 'axios';
+import { UserDto } from '../types/dto/UserDto.ts';
+import { VerificationDto } from '../types/dto/VerificationDto.ts';
 
 interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
+  showAuthOverlay: boolean;
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     token: localStorage.getItem('user-token') ?? null,
     isAuthenticated: !!localStorage.getItem('user-token'),
+    showAuthOverlay: false,
   }),
 
   actions: {
@@ -28,20 +30,12 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('user-token');
     },
 
-    async checkAuth() {
-      if (!this.token) {
-        this.clearToken();
-        return false;
-      }
-      return true;
-    },
-
     async login(userDto: UserDto) {
-      try{
+      try {
         const response: AxiosResponse<VerificationDto> = await axios.post('/api/public/user/verify', userDto);
         this.setToken(response.data.token);
       } catch (error) {
-        console.log("Error occurred during login: " + error)
+        console.log("Error occurred during login: " + error);
       }
     },
 
@@ -50,12 +44,13 @@ export const useAuthStore = defineStore('auth', {
         const response: AxiosResponse<VerificationDto> = await axios.post('/api/public/user', userDto);
         this.setToken(response.data.token);
       } catch (error) {
-        console.log("Error occurred during signup: " + error)
+        console.log("Error occurred during signup: " + error);
       }
     },
 
     async logout() {
       this.clearToken();
+      location.reload();
     }
   },
 
@@ -64,4 +59,4 @@ export const useAuthStore = defineStore('auth', {
       return this.isAuthenticated && !!this.token;
     }
   }
-})
+});
