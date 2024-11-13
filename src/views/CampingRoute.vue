@@ -1,12 +1,13 @@
 <script lang="ts" setup>
-import {inject, onMounted, ref} from "vue";
-import {CampingRouteDto} from "../types/dto/CampingRouteDto";
+import { inject, onMounted, ref } from "vue";
+import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
-import {Axios, HttpStatusCode} from "axios";
-import {useRoute, useRouter} from "vue-router";
-import {CommentDto} from "../types/dto/CommentDto";
+import { Axios, HttpStatusCode } from "axios";
+import { useRoute, useRouter } from "vue-router";
+import { CommentDto } from "../types/dto/CommentDto";
 import CommentCard from "../components/CommentCard.vue";
-import {getImageUrlsForId} from "../util/images.ts";
+import { getImageUrlsForId } from "../util/images.ts";
+import { useAuth } from "../composables/useAuth.ts";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
@@ -18,6 +19,7 @@ const campingRouteImageURLs = ref<string[]>([]);
 const comments = ref<CommentDto[]>([]);
 const route = useRoute();
 const router = useRouter();
+const { isLoggedIn, showAuthOverlay } = useAuth();
 
 const fetchRoute = async () => {
   try {
@@ -25,7 +27,7 @@ const fetchRoute = async () => {
     campingRoute.value = response.data;
   } catch (error){
     console.error("Error fetching route: " + error);
-  }
+}
 }
 
 const fetchComments = async () => {
@@ -69,22 +71,27 @@ const addComment = async (content: string) => {
 }
 
 const toggleCommentForm = () => {
+  if (!isLoggedIn.value) {
+    showAuthOverlay.value = true;
+    return;
+  }
   showCommentForm.value = !showCommentForm.value;
 };
 
 const deleteRoute = async () => {
-  try {
-    const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
-    if (response.status === 204) {
-      const deleteImagesResponse = await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`)
-      if (deleteImagesResponse.status === 204) {
-        await router.push("/")
-      }
-    }
-  } catch (error){
-    console.error("Error fetching camping route: " + error);
+  if (!isLoggedIn.value) {
+    showAuthOverlay.value = true;
+    return;
   }
-}
+
+  try {
+    await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`);
+    await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
+    router.push("/");
+  } catch (error) {
+    console.error("Error deleting camping route: ", error);
+  }
+};
 
 const showCommentForm = ref<boolean>(false);
 const commentContent = ref<string>('');
@@ -99,7 +106,7 @@ onMounted(() => {
 <template>
   <div v-if="campingRoute">
     <CampingRouteCard :camping-route="campingRoute" :image-urls="campingRouteImageURLs" />
-    <button class="text-red-400" @click="deleteRoute()">Delete</button>
+    <button class="text-red-400" @click="deleteRoute">Delete</button>
     <button @click="toggleCommentForm">
       {{ showCommentForm ? 'Cancel' : 'Add Comment' }}
     </button>

@@ -7,9 +7,8 @@ import {useAuth} from "../composables/useAuth.ts";
 
 const isMenuOpen = ref(false);
 const isSearchOpen = ref(false);
-const showAuthOverlay = ref(false);
 const showAddCampingRouteOverlay = ref(false);
-const { isLoggedIn, logout } = useAuth();
+const { isLoggedIn, logout, showAuthOverlay } = useAuth();
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -19,6 +18,14 @@ const toggleSearch = () => {
   isSearchOpen.value = !isSearchOpen.value;
   isMenuOpen.value = false;
 };
+
+const handleShowAddCampingRouteOverlay = () => {
+  if (isLoggedIn.value) {
+    showAddCampingRouteOverlay.value = true;
+  } else {
+    showAuthOverlay.value = true;
+  }
+}
 </script>
 
 <template>
@@ -32,7 +39,7 @@ const toggleSearch = () => {
       </div>
       <SearchBar class="w-full max-w-md hidden md:block" />
       <div class="gap-6 hidden md:flex">
-        <button @click="showAddCampingRouteOverlay = true">Lisa rada</button>
+        <button @click="handleShowAddCampingRouteOverlay">Lisa rada</button>
         <button v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
         <button v-if="isLoggedIn" @click="logout">Logi välja</button>
       </div>
@@ -69,13 +76,14 @@ const toggleSearch = () => {
   </nav>
 
 
-  <AuthOverlay
-      v-if="showAuthOverlay"
-      @close="showAuthOverlay = false"
-  />
+
   <AddCampingRouteOverlay
       v-if="showAddCampingRouteOverlay"
       @close="showAddCampingRouteOverlay = false"
+  />
+  <AuthOverlay
+      v-if="showAuthOverlay"
+      @close="showAuthOverlay = false"
   />
 </template>
 
