@@ -2,9 +2,13 @@
 import { ref } from 'vue';
 import SearchBar from "./SearchBar.vue";
 import AddCampingRouteOverlay from "./AddCampingRouteOverlay.vue";
+import AuthOverlay from "./AuthOverlay.vue";
+import {useAuth} from "../composables/useAuth.ts";
 
 const isMenuOpen = ref(false);
 const isSearchOpen = ref(false);
+const showAddCampingRouteOverlay = ref(false);
+const { isLoggedIn, logout, showAuthOverlay } = useAuth();
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -14,6 +18,14 @@ const toggleSearch = () => {
   isSearchOpen.value = !isSearchOpen.value;
   isMenuOpen.value = false;
 };
+
+const handleShowAddCampingRouteOverlay = () => {
+  if (isLoggedIn.value) {
+    showAddCampingRouteOverlay.value = true;
+  } else {
+    showAuthOverlay.value = true;
+  }
+}
 </script>
 
 <template>
@@ -26,7 +38,11 @@ const toggleSearch = () => {
         </RouterLink>
       </div>
       <SearchBar class="w-full max-w-md hidden md:block" />
-      <AddCampingRouteOverlay>Lisa rada</AddCampingRouteOverlay>
+      <div class="gap-6 hidden md:flex">
+        <button @click="handleShowAddCampingRouteOverlay">Lisa rada</button>
+        <button v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
+        <button v-if="isLoggedIn" @click="logout">Logi välja</button>
+      </div>
       <div class="md:hidden flex gap-3">
         <button class="p-2 rounded-md text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" @click="toggleSearch">
           <span class="sr-only">Toggle search</span>
@@ -43,8 +59,10 @@ const toggleSearch = () => {
       </div>
     </div>
     <div :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" class="md:hidden">
-      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-        <RouterLink class="block px-3 py-2 rounded-md text-base text-white font-medium hover:bg-green-900" to="/add_route">Lisa radasid</RouterLink>
+      <div class="flex flex-col gap-3 px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <button @click="showAddCampingRouteOverlay = true">Lisa rada</button>
+        <button v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
+        <button v-if="isLoggedIn" @click="logout">Logi välja</button>
       </div>
     </div>
     <div v-if="isSearchOpen" class="absolute top-0 left-0 right-0 bg-emerald-800 p-2 flex justify-between items-center gap-5">
@@ -56,5 +74,16 @@ const toggleSearch = () => {
       </button>
     </div>
   </nav>
+
+
+
+  <AddCampingRouteOverlay
+      v-if="showAddCampingRouteOverlay"
+      @close="showAddCampingRouteOverlay = false"
+  />
+  <AuthOverlay
+      v-if="showAuthOverlay"
+      @close="showAuthOverlay = false"
+  />
 </template>
 

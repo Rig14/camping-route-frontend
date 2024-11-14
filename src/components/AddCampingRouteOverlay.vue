@@ -1,146 +1,139 @@
-<script lang="ts" setup>
-import {inject, ref} from "vue";
-import {CampingRouteDto} from "../types/dto/CampingRouteDto.ts";
-import {Axios} from "axios";
+<script setup lang="ts">
+import { ref, reactive, inject } from 'vue';
+import { Axios } from "axios";
+import { CampingRouteDto } from "../types/dto/CampingRouteDto.ts";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
-  throw new Error("Axios is not injected")
+  throw new Error("Axios is not injected");
 }
 
-const overlay = ref<HTMLDialogElement>()
+const emit = defineEmits(['close']);
 
-function toggleOverlay() {
-  if (overlay.value === undefined) {
-    throw new Error("Overlay value is undefined")
-  }
-
-  if (overlay.value.open) {
-    overlay.value.close();
-  } else {
-    overlay.value.showModal();
-  }
-}
-
-const route = ref<CampingRouteDto>({
+const routeForm = reactive<CampingRouteDto>({
   name: '',
   description: '',
   location: '',
   thumbnailUrl: '',
 });
+
 const images = ref<File[]>([]);
 const imagesAsURLs = ref<string[]>([]);
+const formError = ref<string | null>(null);
+
+const handleAddImage = (e: Event) => {
+  const fileList = (e.target as HTMLInputElement).files;
+
+  // get all files that user has added
+  if (fileList) {
+    for (const element of fileList) {
+      const file = element;
+      images.value.push(file);
+      imagesAsURLs.value.push(URL.createObjectURL(file));
+    }
+    formError.value = null;
+  }
+};
 
 const submitForm = async () => {
+  if (images.value.length === 0) {
+    formError.value = "Palun lisa vähemalt 1 pilt.";
+    return;
+  }
+
   try {
     // upload data about the camping route
-    const response = await axios.post<CampingRouteDto>('/api/camping_routes', route.value);
-    console.log('Added camping route:', response.data);
-    route.value = {
-      name: '',
-      description: '',
-      location: '',
-      thumbnailUrl: ''
-    };
+    const response = await axios.post('/api/camping_routes', routeForm);
 
     // upload images for the camping route
     const formData = new FormData();
-    images.value.forEach(image => {
-      formData.append("files", image)
-    })
-    const imagesResponse = await axios.post(
-        "/api/camping_routes/images/" + response.data.id,
-        formData
-    )
-    console.log('Added images for the route. Status: ', imagesResponse.status);
+    images.value.forEach(image => formData.append("files", image));
+    await axios.post(`/api/camping_routes/images/${response.data.id}`, formData);
 
-    if (response.status === 200 && imagesResponse.status === 200) {
-      toggleOverlay()
-    } else {
-      console.error("Something went wrong when uploading new camping route")
-    }
+    emit('close');
+    location.reload();
   } catch (error) {
     console.error('Error adding camping route:', error);
   }
-}
+};
 
-function handleAddImage(e: Event) {
-  const fileList = (e.target as HTMLInputElement).files
-
-  // get all files that user has added
-  if (fileList === null) {
-    console.log("No files added.")
-    return
-  }
-  for (let i = 0; i < fileList.length; i++) {
-    const file = fileList[i]
-    images.value.push(file)
-    imagesAsURLs.value.push(URL.createObjectURL(file))
-  }
-}
-
-function deleteImage(image: string) {
-  const index = imagesAsURLs.value.findIndex(e => e == image);
-  imagesAsURLs.value.splice(index, 1)
-  images.value.splice(index, 1)
+function deleteImage(imageUrl: string) {
+  const index = imagesAsURLs.value.indexOf(imageUrl);
+  imagesAsURLs.value.splice(index, 1);
+  images.value.splice(index, 1);
 }
 </script>
 
 <template>
-  <button @click="toggleOverlay">
-    <slot />
-  </button>
-  <dialog ref="overlay">
-    <div class="flex flex-col max-w-96 min-w-80 bg-emerald-800 rounded p-2">
-      <div class="flex flex-row">
-        <button class="p-1 ml-auto bg-emerald-800 transition hover:bg-emerald-600" @click="toggleOverlay"><img alt="Sulgemise nupu ikoon" src="/x.svg"></button>
-      </div>
+  <div
+      class="absolute w-full h-full z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+      @click="emit('close')"
+  >
+    <div
+        class="bg-[#242424] rounded-lg shadow-xl max-w-md w-full relative p-6"
+        @click.stop
+    >
+      <button
+          @click="emit('close')"
+          class="absolute right-4 top-4 text-white text-lg hover:text-red-300 py-0.5 px-1.5 rounded-full bg-transparent"
+          aria-label="Close"
+      >
+        ✕
+      </button>
 
-      <h1 class="text-xl">Lisa uus matkarada</h1>
+      <p class="text-center text-white font-bold text-lg mb-5">Lisa uus matkarada</p>
 
-      <form @submit.prevent="submitForm">
-        <div class="flex flex-col gap-5 ml-2 mr-2 mt-2">
-          <input v-model="route.name" class="rounded p-2" placeholder="Nimi" required type="text">
-          <input v-model="route.description" class="rounded p-2" placeholder="Kirjeldus" required type="text">
-          <input v-model="route.location" class="rounded p-2" placeholder="Asukoht" required type="text">
+      <form @submit.prevent="submitForm" class="space-y-4">
+        <input
+            v-model="routeForm.name"
+            placeholder="Nimi"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-800 focus:border-transparent"
+            required
+        />
+        <input
+            v-model="routeForm.description"
+            placeholder="Kirjeldus"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-800 focus:border-transparent"
+            required
+        />
+        <input
+            v-model="routeForm.location"
+            placeholder="Asukoht"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-800 focus:border-transparent"
+            required
+        />
+
+        <label for="" class="block text-center text-white">Lisa pildid</label>
+        <div class="relative border-2 border-dashed rounded-lg p-4 bg-gray-700 cursor-pointer">
+          <input
+              type="file"
+              accept="image/*"
+              multiple
+              class="absolute inset-0 opacity-0 cursor-pointer"
+              @change="handleAddImage"
+          />
+          <p class="text-gray-400 text-center">Vali või lohista pildid siia (SVG, PNG, JPG, JPEG)</p>
         </div>
 
-        <div class="flex items-center justify-center w-full mt-4 mb-4">
-          <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600" for="dropzone-file">
-            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-              <svg aria-hidden="true" class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-              </svg>
-              <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Vajuta</span> või lohista</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG, JPEG</p>
-            </div>
-            <input
-                id="dropzone-file"
-                accept="image/*"
-                class="absolute opacity-0"
-                style="width: inherit; height: inherit"
-                type="file"
-                @change="handleAddImage"
-            />
-          </label>
+        <p v-if="formError" class="text-red-500 text-sm mt-2 text-center">{{ formError }}</p>
+
+        <div class="grid grid-cols-5 gap-2 mt-4">
+          <div v-for="image in imagesAsURLs" :key="image" class="relative">
+            <button
+                @click="deleteImage(image)"
+                class="absolute -left-2 -top-2 p-1 bg-red-600 rounded-full"
+            >✕</button>
+            <img :src="image" alt="Route" class="w-full h-auto rounded-md" />
+          </div>
         </div>
 
-
-        <button class="mb-4" type="submit">Loo uus matkarada</button>
+        <button
+            type="submit"
+            class="w-full bg-emerald-800 text-white py-2 px-4 rounded-md hover:bg-emerald-900"
+        >
+          Loo uus matkarada
+        </button>
       </form>
-
-      <div class="grid grid-cols-5 gap-2">
-        <div v-for="image in imagesAsURLs" class="relative">
-          <button class="absolute -left-2 -top-2 p-0 bg-red-700 rounded-3xl" @click="deleteImage(image)">
-            <img alt="eemalda pilt ikoon" class="w-4 h-4" src="/x.svg">
-          </button>
-          <img :src="image" alt="image">
-        </div>
-      </div>
     </div>
-  </dialog>
+  </div>
 </template>
-
-<style scoped>
-
-</style>
