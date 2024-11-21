@@ -1,34 +1,38 @@
-<script setup lang="ts">
-import {inject, onMounted, ref} from "vue";
-import {CampingRouteDto} from "../types/dto/CampingRouteDto";
+<script lang="ts" setup>
+import { inject, onMounted, ref } from "vue";
+import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
-import {Axios, HttpStatusCode} from "axios";
-import {useRoute, useRouter} from "vue-router";
-import {CommentDto} from "../types/dto/CommentDto";
+import { Axios, HttpStatusCode } from "axios";
+import { useRoute, useRouter } from "vue-router";
+import { CommentDto } from "../types/dto/CommentDto";
 import CommentCard from "../components/CommentCard.vue";
+import { getImageUrlsForId } from "../util/images.ts";
+import { useAuth } from "../composables/useAuth.ts";
 
-const axios = inject<Axios>('axios')
+const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected")
 }
 
 const campingRoute = ref<CampingRouteDto>();
+const campingRouteImageURLs = ref<string[]>([]);
 const comments = ref<CommentDto[]>([]);
 const route = useRoute();
 const router = useRouter();
+const { isLoggedIn, showAuthOverlay } = useAuth();
 
 const fetchRoute = async () => {
   try {
-    const response = await axios.get<CampingRouteDto>(`/api/camping_routes/${route.params.id}`);
+    const response = await axios.get<CampingRouteDto>(`/api/public/camping_routes/${route.params.id}`);
     campingRoute.value = response.data;
   } catch (error){
-    console.error("Error fetching camping route: " + error);
-  }
+    console.error("Error fetching route: " + error);
+}
 }
 
 const fetchComments = async () => {
   try {
-    const response = await axios.get<CommentDto[]>(`/api/camping_routes/comments/${route.params.id}`);
+    const response = await axios.get<CommentDto[]>(`/api/public/camping_routes/comments/${route.params.id}`);
     if (Array.isArray(response.data)) {
       comments.value = response.data;
     } else {
@@ -39,6 +43,9 @@ const fetchComments = async () => {
   }
 }
 
+const fetchCampingRouteImages = async () => {
+  campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios)
+}
 
 const submitComment = async () => {
   try {
@@ -64,22 +71,27 @@ const addComment = async (content: string) => {
 }
 
 const toggleCommentForm = () => {
+  if (!isLoggedIn.value) {
+    showAuthOverlay.value = true;
+    return;
+  }
   showCommentForm.value = !showCommentForm.value;
 };
 
-const failMessage = ref<string>();
 const deleteRoute = async () => {
-  try {
-    const response = await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
-    if (response.status === 204) {
-      await router.push("/")
-    } else if (response.status == 404) {
-      failMessage.value = "Matkarada ei kustutatud."
-    }
-  } catch (error){
-    console.error("Error fetching camping route: " + error);
+  if (!isLoggedIn.value) {
+    showAuthOverlay.value = true;
+    return;
   }
-}
+
+  try {
+    await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`);
+    await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
+    router.push("/");
+  } catch (error) {
+    console.error("Error deleting camping route: ", error);
+  }
+};
 
 const showCommentForm = ref<boolean>(false);
 const commentContent = ref<string>('');
@@ -87,17 +99,14 @@ const commentContent = ref<string>('');
 onMounted(() => {
   fetchRoute();
   fetchComments();
+  fetchCampingRouteImages();
 });
 </script>
 
 <template>
   <div v-if="campingRoute">
-    <CampingRouteCard :camping-route="campingRoute" />
-    <button class="text-red-400" @click="deleteRoute()">Delete</button>
-    <div v-if="failMessage">
-      <p>{{failMessage}}</p>
-    </div>
-
+    <CampingRouteCard :camping-route="campingRoute" :image-urls="campingRouteImageURLs" />
+    <button class="text-red-400" @click="deleteRoute">Delete</button>
     <button @click="toggleCommentForm">
       {{ showCommentForm ? 'Cancel' : 'Add Comment' }}
     </button>
@@ -107,9 +116,9 @@ onMounted(() => {
       <form @submit.prevent="submitComment">
         <input
             v-model="commentContent"
-            type="text"
             placeholder="Enter your comment"
             required
+            type="text"
         />
         <button type="submit">Submit</button>
       </form>
