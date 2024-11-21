@@ -69,7 +69,7 @@ const submitForm = async () => {
     images.value.forEach(image => formData.append("files", image));
     await axios.post(`/api/camping_routes/images/${response.data.id}`, formData);
 
-    if (!gpxFile.value) {
+    if (gpxFile.value) {
       const gpxFormData = new FormData();
       gpxFormData.append("file", gpxFile.value);
       await axios.post(`/api/camping_routes/gpx/${response.data.id}`, gpxFormData);
