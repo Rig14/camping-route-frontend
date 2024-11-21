@@ -1,4 +1,11 @@
 <script lang="ts" setup>
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+}
+
 import {inject, onMounted, ref, watch} from 'vue';
 import {useRoute} from 'vue-router';
 import {Axios} from "axios";
@@ -15,41 +22,91 @@ if (axios === undefined) {
 const searchResults = ref<{images: string[], route: CampingRouteDto}[]>([]);
 const isLoading = ref(false);
 
-const fetchSearchResults = async (query: string) => {
+const currentPage = ref<number>(1 );
+const totalPages = ref<number>(1);
+const totalElements = ref<number>(1)
+const pageSize = 3; // 3 entities per page
+
+const fetchSearchResults = async (query: string, page: number) => {
   isLoading.value = true;
+
   try {
-    const response = await axios.get<CampingRouteDto[]>('/api/public/camping_routes', {
-      params: { name: query, location: query }
+    console.log('initiating search')
+    const response = await axios.post<PageResponse<CampingRouteDto>>('/api/public/camping_routes/search', {
+      keyword: query,
+      pageNumber: page,
+      pageSize: pageSize,
     });
-    for (let i = 0; i < response.data.length; i++) {
-      const route = response.data[i];
-      if (route.id === undefined) continue;
-      const images = await getImageUrlsForId(route.id, axios)
-      searchResults.value.push({
-        images: images,
-        route: route
-      })
-    }
+    console.log('Response:', response);
+
+    const { content = [], totalPages: responseTotalPages, totalElements:  responseTotalElements } = response.data;
+
+    totalPages.value = responseTotalPages
+    console.log(totalPages);
+    totalElements.value = responseTotalElements
+    console.log(totalElements);
+    console.log(content);
 
 
-  } catch (error){
-    console.error("Error fetching camping routes: " + error);
+    // Fetch images for each route concurrently
+    const routesWithImages = await Promise.all(
+        content.map(async (route) => {
+          const images = route.id ? await getImageUrlsForId(route.id, axios) : [];
+          return { images, route };
+        })
+    );
+
+    searchResults.value = routesWithImages;
+  } catch (error) {
+    console.error('Error fetching camping routes:', error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  if (route.query.find) {
-    fetchSearchResults(route.query.find as string);
+  const keywordParam = route.query.find as string | undefined;
+  const pageParam = parseInt(route.query.page as string) || 1;
+  if (keywordParam) {
+    console.log('Fetching results for:', { keywordParam, pageParam });
+    fetchSearchResults(keywordParam, pageParam);
   }
 });
 
-watch(() => route.query.find, (newQuery) => {
-  if (newQuery) {
-    fetchSearchResults(newQuery as string);
+watch(
+    () => route.query,
+    (newQuery) => {
+      console.log(route.query)
+      const keywordParam = newQuery.find as string | undefined;
+      const pageParam = parseInt(newQuery.page as string) || 1;
+      if (keywordParam) {
+        console.log('Fetching results for:', { keywordParam, pageParam });
+        fetchSearchResults(keywordParam, pageParam);
+      }
+    }
+);
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    const keyword = route.query.keyword as string;
+    const newPage = currentPage.value - 1;
+    router.push({
+      name: 'Search',
+      query: { keyword, page: newPage }
+    });
   }
-});
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    const keyword = route.query.keyword as string;
+    const newPage = currentPage.value + 1;
+    router.push({
+      name: 'Search',
+      query: { keyword, page: newPage }
+    });
+  }
+};
 </script>
 
 <template>
@@ -61,6 +118,26 @@ watch(() => route.query.find, (newQuery) => {
         <RouterLink :to="{name: 'CampingRoute', params: {id: item.route.id}}">
           <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
         </RouterLink>
+      </div>
+      <!-- Pagination Controls -->
+      <div class="pagination-controls flex justify-center items-center mt-4">
+        <button
+          @click="prevPage"
+          :disabled="currentPage === 1"
+          class="px-4 py-2 bg-gray-200 rounded-l disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span class="px-4 py-2 bg-gray-100">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        <button
+          @click="nextPage"
+          :disabled="currentPage === totalPages"
+          class="px-4 py-2 bg-gray-200 rounded-r disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   </div>
