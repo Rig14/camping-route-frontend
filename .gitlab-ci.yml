@@ -1,10 +1,15 @@
 stages:
   - build
+  - dockerize
   - deploy
+
+variables:
+  DOCKER_REGISTRY: docker.io
+  DOCKER_IMAGE: rig14/matkarajad-front
 
 build-vite-app:
   stage: build
-  image: node:16
+  image: node:latest
   script:
     - npm ci # does a clean installation of packages
     - npm run build
@@ -12,6 +17,26 @@ build-vite-app:
     paths:
       - dist/
     expire_in: 30 days
+
+dockerize-vite-app:
+  stage: dockerize
+  image: docker:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+script:
+  - |
+    echo "DOCKER_REGISTRY: $DOCKER_REGISTRY"
+    echo "DOCKER_IMAGE: $DOCKER_IMAGE"
+    echo "CI_COMMIT_SHORT_SHA: $CI_COMMIT_SHORT_SHA"
+    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+    docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA .
+    docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
+    docker tag $DOCKER_REGISTRY/$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA $DOCKER_REGISTRY/$DOCKER_IMAGE:latest
+    docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:latest
 
 deploy-vite-app: # will only run on push to main
   stage: deploy
@@ -28,5 +53,8 @@ deploy-vite-app: # will only run on push to main
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    - scp -o StrictHostKeyChecking=no -r ./dist ubuntu@193.40.255.42:/tmp
-    - ssh -o StrictHostKeyChecking=no ubuntu@193.40.255.42 "sudo rm -rf /var/www/html/* && sudo mv -v /tmp/dist/* /var/www/html && sudo rm -rf /tmp/dist"
+    - scp -o StrictHostKeyChecking=no ./compose.yaml ubuntu@$SERVER_IP:/home/ubuntu/frontend/
+    - ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "
+      cd /home/ubuntu/frontend &&
+      docker compose pull &&
+      docker compose up -d --remove-orphans"
