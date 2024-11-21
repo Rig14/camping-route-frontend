@@ -85,6 +85,8 @@ const deleteRoute = async () => {
   }
 
   try {
+    await axios.delete<HttpStatusCode>(`/api/camping_routes/gpx/${route.params.id}`)
+
     await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`);
     await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
     router.push("/");
