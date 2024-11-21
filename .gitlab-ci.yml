@@ -27,7 +27,7 @@ dockerize-vite-app:
     - docker:dind
   variables:
     DOCKER_TLS_CERTDIR: ""
-script:
+  script:
   - |
     echo "DOCKER_REGISTRY: $DOCKER_REGISTRY"
     echo "DOCKER_IMAGE: $DOCKER_IMAGE"
