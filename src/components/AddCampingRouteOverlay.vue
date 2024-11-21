@@ -58,10 +58,6 @@ const submitForm = async () => {
     formError.value = "Palun lisa vähemalt 1 pilt.";
     return;
   }
-  if (!gpxFile.value) {
-    formError.value = "Palun lisa üks GPX-fail.";
-    return;
-  }
 
 
   try {
@@ -73,10 +69,11 @@ const submitForm = async () => {
     images.value.forEach(image => formData.append("files", image));
     await axios.post(`/api/camping_routes/images/${response.data.id}`, formData);
 
-    const gpxFormData = new FormData();
-    gpxFormData.append("file", gpxFile.value);
-    await axios.post(`/api/camping_routes/gpx/${response.data.id}`, gpxFormData);
-
+    if (!gpxFile.value) {
+      const gpxFormData = new FormData();
+      gpxFormData.append("file", gpxFile.value);
+      await axios.post(`/api/camping_routes/gpx/${response.data.id}`, gpxFormData);
+    }
     emit('close');
     location.reload();
   } catch (error) {
