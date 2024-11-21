@@ -33,17 +33,24 @@ const handleAddImage = (e: Event) => {
     }
     formError.value = null;
   }
+  (e.target as HTMLInputElement).value = '';
 };
 
 const handleAddGpxFile = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0];
-  console.log(file.type)
   if (file && file.name.toLowerCase().endsWith(".gpx")) {
     gpxFile.value = file;
     formError.value = null;
   } else {
     formError.value = "Palun lisa kehtiv GPX-fail.";
+    gpxFile.value = null;
   }
+  (e.target as HTMLInputElement).value = '';
+};
+
+const removeGpxFile = () => {
+  gpxFile.value = null;
+  formError.value = null;
 };
 
 const submitForm = async () => {
@@ -144,6 +151,11 @@ function deleteImage(imageUrl: string) {
               @change="handleAddGpxFile"
           />
           <p class="text-gray-400 text-center">Vali või lohista GPX-fail siia</p>
+        </div>
+
+        <div v-if="gpxFile" class="mt-4 flex items-center justify-between bg-gray-800 text-white px-3 py-2 rounded-md">
+          <p>{{ gpxFile.name }}</p>
+          <button @click="removeGpxFile" class="text-red-400 hover:text-red-600">✕</button>
         </div>
 
         <p v-if="formError" class="text-red-500 text-sm mt-2 text-center">{{ formError }}</p>
