@@ -3,5 +3,5 @@ services:
     image: rig14/matkarajad-front:latest
     container_name: frontend
     ports:
-      - "3000:80"
+      - "3001:80"
     restart: unless-stopped
