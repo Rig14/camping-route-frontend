@@ -8,13 +8,11 @@ import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import { CommentDto } from "../types/dto/CommentDto";
 import GpxMap from "../components/GpxMap.vue";
 
-// Inject Axios instance
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected");
 }
 
-// Define props, reactive variables, and methods
 const campingRoute = ref<CampingRouteDto>();
 const campingRouteImageURLs = ref<string[]>([]);
 const comments = ref<CommentDto[]>([]);
@@ -25,7 +23,6 @@ const { isLoggedIn, showAuthOverlay } = useAuth();
 const showCommentForm = ref<boolean>(false);
 const commentContent = ref<string>("");
 
-// Fetch route data
 const fetchRoute = async () => {
   try {
     const response = await axios.get<CampingRouteDto>(`/api/public/camping_routes/${route.params.id}`);
@@ -35,7 +32,6 @@ const fetchRoute = async () => {
   }
 };
 
-// Fetch comments
 const fetchComments = async () => {
   try {
     const response = await axios.get<CommentDto[]>(`/api/public/camping_routes/comments/${route.params.id}`);
@@ -49,13 +45,11 @@ const fetchComments = async () => {
   }
 };
 
-// Fetch images for the camping route
 const fetchCampingRouteImages = async () => {
   campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios);
   console.log(campingRouteImageURLs)
 };
 
-// Submit a new comment
 const submitComment = async () => {
   try {
     await addComment(commentContent.value);
@@ -68,7 +62,6 @@ const submitComment = async () => {
   }
 };
 
-// Add a new comment to the route
 const addComment = async (content: string) => {
   try {
     const response = await axios.post(`/api/camping_routes/comments/${route.params.id}`, { content });
@@ -80,7 +73,6 @@ const addComment = async (content: string) => {
   }
 };
 
-// Toggle the comment form visibility
 const toggleCommentForm = () => {
   if (!isLoggedIn.value) {
     showAuthOverlay.value = true;
@@ -89,7 +81,6 @@ const toggleCommentForm = () => {
   showCommentForm.value = !showCommentForm.value;
 };
 
-// Delete the camping route
 const deleteRoute = async () => {
   if (!isLoggedIn.value) {
     showAuthOverlay.value = true;
@@ -106,7 +97,6 @@ const deleteRoute = async () => {
   }
 };
 
-// On component mount, fetch data
 onMounted(() => {
   fetchRoute();
   fetchComments();
@@ -116,30 +106,32 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto p-6">
-    <div v-if="campingRoute">
-      <!-- Camping Route Card -->
-      <div class="mb-8 bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md overflow-hidden lg:flex">
-        <div class="lg:w-2/5 p-6">
+    <div v-if="campingRoute" class="space-y-6">
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md p-6">
           <h1 class="font-bold text-3xl mb-4">{{ campingRoute.name }}</h1>
           <p class="text-base mb-4">{{ campingRoute.description }}</p>
-          <p class="text-sm text-gray-200">Asukoht: {{ campingRoute.location }}</p>
+          <p class="text-sm text-gray-200">Location: {{ campingRoute.location }}</p>
         </div>
-        <div class="lg:w-3/5">
-          <img
-              v-for="url in campingRouteImageURLs"
-              :src="url"
-              :key="url"
-              class="w-full h-64 object-cover lg:h-full"
-              alt="Camping route image"
-          />
+
+        <div class="bg-gradient-to-tl from-green-950 to-gray-900 rounded-xl shadow-md overflow-hidden">
+          <div class="grid grid-cols-1 gap-2">
+            <img
+                v-for="url in campingRouteImageURLs"
+                :src="url"
+                :key="url"
+                class="w-full h-64 object-cover"
+                alt="Camping route image"
+            />
+          </div>
         </div>
       </div>
+
       <div>
         <GpxMap :campingRouteId="route.params.id" />
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex space-x-4 mb-6">
+      <div class="flex space-x-4">
         <button
             class="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-500 transition"
             @click="deleteRoute"
@@ -154,12 +146,11 @@ onMounted(() => {
         </button>
       </div>
 
-      <!-- Comment Form -->
-      <div v-if="showCommentForm" class="mb-6">
-        <form @submit.prevent="submitComment" class="flex flex-col space-y-4">
+      <div v-if="showCommentForm" class="bg-gray-800 p-6 rounded-lg">
+        <form @submit.prevent="submitComment" class="space-y-4">
           <input
               v-model="commentContent"
-              class="p-4 border border-gray-300 rounded-lg w-full"
+              class="w-full p-4 border border-gray-300 rounded-lg"
               placeholder="Enter your comment"
               required
               type="text"
@@ -168,28 +159,27 @@ onMounted(() => {
               type="submit"
               class="px-6 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition"
           >
-            Submit
+            Submit Comment
           </button>
         </form>
       </div>
 
-      <!-- Comments -->
       <div v-if="comments.length" class="bg-gray-800 text-gray-200 p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Comments</h2>
-        <ul class="space-y-6">
+        <h2 class="text-2xl font-semibold mb-4">Comments</h2>
+        <ul class="space-y-4">
           <li
               v-for="(comment, index) in comments"
               :key="index"
-              class="p-4 bg-gray-700 rounded-lg shadow-lg"
+              class="p-4 bg-gray-700 rounded-lg"
           >
-            <p class="text-sm text-gray-400 mb-2">anonymous user</p>
+            <p class="text-sm text-gray-400 mb-2">Anonymous User</p>
             <p class="text-base">{{ comment.content }}</p>
           </li>
         </ul>
       </div>
     </div>
-    <div v-else>
-      <p class="text-gray-400 text-center text-lg">Loading route details...</p>
+    <div v-else class="text-center">
+      <p class="text-gray-400 text-lg">Loading route details...</p>
     </div>
   </div>
 </template>
