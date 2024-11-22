@@ -1,29 +1,59 @@
 <script lang="ts" setup>
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+}
+
 import {inject, onMounted, ref, watch} from 'vue';
-import {useRoute} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 import {Axios} from "axios";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto";
 import CampingRouteCard from "../components/CampingRouteCard.vue";
 import {getImageUrlsForId} from "../util/images.ts";
 
 const route = useRoute();
+const router = useRouter();
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected");
 }
 
-const searchResults = ref<{images: string[], route: CampingRouteDto}[]>([]);
+let searchResults = ref<{images: string[], route: CampingRouteDto}[]>([]);
 const isLoading = ref(false);
 
-const fetchSearchResults = async (query: string) => {
+const searchKeyword = ref<string | undefined>(undefined); // saving this and using it for pagination
+const currentPage = ref<number>(1);
+const totalPages = ref<number>(1);
+const totalElements = ref<number>(1)
+const pageSize = 1;
+
+const fetchSearchResults = async (query: string, page: number) => {
   isLoading.value = true;
+
   try {
-    const response = await axios.get<CampingRouteDto[]>('/api/public/camping_routes', {
-      params: { name: query, location: query }
+    console.log ('initiating search')
+    const response = await axios.post<PageResponse<CampingRouteDto>>('/api/public/camping_routes/search', {
+      keyword: query,
+      pageNumber: page - 1,
+      pageSize: pageSize,
     });
-    for (let i = 0; i < response.data.length; i++) {
-      const route = response.data[i];
-      if (route.id === undefined) continue;
+    console.log('Response:', response);
+
+    searchResults.value = [];
+
+    const { content = [],
+      totalPages: responseTotalPages,
+      totalElements:  responseTotalElements
+    } = response.data;
+
+    for (let i = 0; i < content.length; i++) {
+      const route = content[i];
+      if (route.id === undefined) {
+        console.error('Route ID is undefined', route);
+        continue;
+      }
       const images = await getImageUrlsForId(route.id, axios)
       searchResults.value.push({
         images: images,
@@ -31,25 +61,68 @@ const fetchSearchResults = async (query: string) => {
       })
     }
 
-
-  } catch (error){
-    console.error("Error fetching camping routes: " + error);
+    totalPages.value = responseTotalPages
+    totalElements.value = responseTotalElements
+    console.log(totalElements);
+    console.log(content);
+  } catch (error) {
+    console.error('Error fetching camping routes:', error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  if (route.query.find) {
-    fetchSearchResults(route.query.find as string);
+  const keywordParam = route.query.find as string;
+  const pageParam = parseInt(route.query.page as string) || 1;
+  currentPage.value = pageParam;
+  if (keywordParam) {
+    searchKeyword.value = keywordParam;
+    console.log('Fetching results for:', { keywordParam, pageParam });
+    fetchSearchResults(keywordParam, pageParam);
   }
 });
 
-watch(() => route.query.find, (newQuery) => {
-  if (newQuery) {
-    fetchSearchResults(newQuery as string);
+watch(
+    () => route.query,
+    (newQuery) => {
+      console.log(route.query)
+      console.log("watch initiated")
+      const keywordParam = newQuery.find as string;
+      console.log(keywordParam)
+      const pageParam = parseInt(newQuery.page as string) || 1;
+      console.log(pageParam)
+      currentPage.value = pageParam;
+
+      if (keywordParam) {
+        searchKeyword.value = keywordParam;
+        console.log('Fetching results for:', { keywordParam, pageParam });
+        fetchSearchResults(keywordParam, pageParam);
+      }
+    }
+);
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    const keyword = searchKeyword.value;
+    const newPage = currentPage.value - 1;
+    router.push({
+      name: 'SearchResults',
+      query: { find: keyword, page: newPage },
+    });
   }
-});
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    const keyword = searchKeyword.value;
+    const newPage = currentPage.value + 1;
+    router.push({
+      name: 'SearchResults',
+      query: { find: keyword, page: newPage },
+    });
+  }
+};
 </script>
 
 <template>
@@ -58,10 +131,30 @@ watch(() => route.query.find, (newQuery) => {
     <div v-else-if="searchResults.length === 0">No results found.</div>
     <div v-else>
       <div v-for="item in searchResults" :key="item.route.id" class="flex flex-col gap-1">
-        <RouterLink :to="{name: 'CampingRoute', params: {id: item.route.id}}">
+        <RouterLink :to=" {name: 'CampingRoute', params: {id: item.route.id}} ">
           <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
         </RouterLink>
       </div>
+      <!-- Pagination Controls -->
+        <div class="px-6 py-4 flex justify-center items-center">
+          <button
+              @click="prevPage"
+              :disabled="currentPage === 1"
+              class="px-4 py-2 rounded disabled:opacity-50 mr-2"
+          >
+            Previous
+          </button>
+          <span class="text-gray-300 text-base">
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+          <button
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              class="px-4 py-2 rounded disabled:opacity-50 ml-2"
+          >
+            Next
+          </button>
+        </div>
     </div>
   </div>
 </template>

@@ -16,7 +16,7 @@ const routes = [
     },
     {
         name: 'SearchResults',
-        path: '/results',
+        path: '/search-results',
         component: SearchResults
     }
 ]
