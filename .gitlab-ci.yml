@@ -23,7 +23,6 @@ dockerize-vite-app:
   image: docker:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "19-dockerize-front-end"'
   services:
     - docker:dind
   variables:
@@ -48,7 +47,6 @@ deploy-vite-app: # will only run on push to main
     - job: dockerize-vite-app
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "19-dockerize-front-end"'
   before_script: # install required packages to enable SSH into server
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
