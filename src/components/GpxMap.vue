@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import { onMounted, ref, defineProps, watch } from 'vue';
-import { inject } from 'vue';
-import { Axios } from 'axios';
+import {defineProps, inject, onMounted, ref, watch} from 'vue';
+import {Axios} from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-gpx';
@@ -71,10 +70,10 @@ onMounted(displayGpxRoute);
 
 <template>
   <div class="bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md p-6">
-    <h2 class="text-2xl font-semibold mb-4">Route Map</h2>
+    <h2 class="text-2xl font-semibold mb-4">Matkaraja kaart</h2>
     <div ref="mapContainer" class="h-96 w-full rounded-lg z-0"></div>
   </div>
   <div v-if="!hasGpxFile" class="text-center text-gray-500 p-4">
-    No GPX route available for this camping route
+    Sellel matkamarsruudil pole GPX-marsruuti saadaval
   </div>
 </template>

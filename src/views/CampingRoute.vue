@@ -111,7 +111,7 @@ onMounted(() => {
         <div class="bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md p-6">
           <h1 class="font-bold text-3xl mb-4">{{ campingRoute.name }}</h1>
           <p class="text-base mb-4">{{ campingRoute.description }}</p>
-          <p class="text-sm text-gray-200">Location: {{ campingRoute.location }}</p>
+          <p class="text-sm text-gray-200">Asukoht: {{ campingRoute.location }}</p>
         </div>
 
         <div class="bg-gradient-to-tl from-green-950 to-gray-900 rounded-xl shadow-md overflow-hidden">
@@ -136,13 +136,13 @@ onMounted(() => {
             class="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-500 transition"
             @click="deleteRoute"
         >
-          Delete
+          Kustuta
         </button>
         <button
             class="px-6 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-800 transition"
             @click="toggleCommentForm"
         >
-          {{ showCommentForm ? 'Cancel' : 'Add Comment' }}
+          {{ showCommentForm ? 'Tühista' : 'Lisa kommentaar' }}
         </button>
       </div>
 
@@ -151,7 +151,7 @@ onMounted(() => {
           <input
               v-model="commentContent"
               class="w-full p-4 border border-gray-300 rounded-lg"
-              placeholder="Enter your comment"
+              placeholder="Sisesta oma sõnum"
               required
               type="text"
           />
@@ -159,27 +159,27 @@ onMounted(() => {
               type="submit"
               class="px-6 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition"
           >
-            Submit Comment
+            Saada sõnum
           </button>
         </form>
       </div>
 
       <div v-if="comments.length" class="bg-gray-800 text-gray-200 p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-4">Comments</h2>
+        <h2 class="text-2xl font-semibold mb-4">Kommentaarid</h2>
         <ul class="space-y-4">
           <li
               v-for="(comment, index) in comments"
               :key="index"
               class="p-4 bg-gray-700 rounded-lg"
           >
-            <p class="text-sm text-gray-400 mb-2">Anonymous User</p>
+            <p class="text-sm text-gray-400 mb-2">Ananüümne kasutaja</p>
             <p class="text-base">{{ comment.content }}</p>
           </li>
         </ul>
       </div>
     </div>
     <div v-else class="text-center">
-      <p class="text-gray-400 text-lg">Loading route details...</p>
+      <p class="text-gray-400 text-lg">Raja andmete laadimine...</p>
     </div>
   </div>
 </template>
