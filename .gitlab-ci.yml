@@ -23,6 +23,7 @@ dockerize-vite-app:
   image: docker:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "19-dockerize-front-end"'
   services:
     - docker:dind
   variables:
