@@ -6,12 +6,15 @@ import { getImageUrlsForId } from "../util/images";
 import { useAuth } from "../composables/useAuth";
 import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import { CommentDto } from "../types/dto/CommentDto";
+import GpxMap from "../components/GpxMap.vue";
 
+// Inject Axios instance
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
   throw new Error("Axios is not injected");
 }
 
+// Define props, reactive variables, and methods
 const campingRoute = ref<CampingRouteDto>();
 const campingRouteImageURLs = ref<string[]>([]);
 const comments = ref<CommentDto[]>([]);
@@ -22,6 +25,7 @@ const { isLoggedIn, showAuthOverlay } = useAuth();
 const showCommentForm = ref<boolean>(false);
 const commentContent = ref<string>("");
 
+// Fetch route data
 const fetchRoute = async () => {
   try {
     const response = await axios.get<CampingRouteDto>(`/api/public/camping_routes/${route.params.id}`);
@@ -31,6 +35,7 @@ const fetchRoute = async () => {
   }
 };
 
+// Fetch comments
 const fetchComments = async () => {
   try {
     const response = await axios.get<CommentDto[]>(`/api/public/camping_routes/comments/${route.params.id}`);
@@ -44,10 +49,13 @@ const fetchComments = async () => {
   }
 };
 
+// Fetch images for the camping route
 const fetchCampingRouteImages = async () => {
   campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios);
+  console.log(campingRouteImageURLs)
 };
 
+// Submit a new comment
 const submitComment = async () => {
   try {
     await addComment(commentContent.value);
@@ -60,6 +68,7 @@ const submitComment = async () => {
   }
 };
 
+// Add a new comment to the route
 const addComment = async (content: string) => {
   try {
     const response = await axios.post(`/api/camping_routes/comments/${route.params.id}`, { content });
@@ -71,6 +80,7 @@ const addComment = async (content: string) => {
   }
 };
 
+// Toggle the comment form visibility
 const toggleCommentForm = () => {
   if (!isLoggedIn.value) {
     showAuthOverlay.value = true;
@@ -79,6 +89,7 @@ const toggleCommentForm = () => {
   showCommentForm.value = !showCommentForm.value;
 };
 
+// Delete the camping route
 const deleteRoute = async () => {
   if (!isLoggedIn.value) {
     showAuthOverlay.value = true;
@@ -95,6 +106,7 @@ const deleteRoute = async () => {
   }
 };
 
+// On component mount, fetch data
 onMounted(() => {
   fetchRoute();
   fetchComments();
@@ -122,11 +134,9 @@ onMounted(() => {
           />
         </div>
       </div>
-      <div class="mb-8 bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md overflow-hidden lg:flex">
-        <p>Map</p>
+      <div>
+        <GpxMap :campingRouteId="route.params.id" />
       </div>
-
-
 
       <!-- Action Buttons -->
       <div class="flex space-x-4 mb-6">
@@ -183,4 +193,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
