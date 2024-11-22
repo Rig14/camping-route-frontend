@@ -45,6 +45,7 @@ deploy-vite-app: # will only run on push to main
   needs:
     - job: build-vite-app
       artifacts: true
+    - job: dockerize-vite-app
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_COMMIT_BRANCH == "19-dockerize-front-end"'
@@ -56,4 +57,9 @@ deploy-vite-app: # will only run on push to main
     - chmod 700 ~/.ssh
   script:
     - scp -o StrictHostKeyChecking=no ./compose.yaml ubuntu@$SERVER_IP:/home/ubuntu/frontend/
-    - ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "cd /home/ubuntu/frontend && docker compose pull && docker compose up -d --remove-orphans"
+    - |
+      ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "
+      cd /home/ubuntu/frontend && \
+      docker compose down && \
+      docker compose pull && \
+      docker compose up -d --remove-orphans"
