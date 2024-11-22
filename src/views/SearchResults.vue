@@ -27,7 +27,7 @@ const searchKeyword = ref<string | undefined>(undefined); // saving this and usi
 const currentPage = ref<number>(1);
 const totalPages = ref<number>(1);
 const totalElements = ref<number>(1)
-const pageSize = 1; // 3 entities per page
+const pageSize = 1;
 
 const fetchSearchResults = async (query: string, page: number) => {
   isLoading.value = true;
