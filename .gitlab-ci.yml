@@ -55,8 +55,5 @@ deploy-vite-app: # will only run on push to main
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-  - scp -o StrictHostKeyChecking=no ./compose.yaml ubuntu@$SERVER_IP:/home/ubuntu/frontend/
-    - ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "
-    cd /home/ubuntu/frontend &&
-    docker compose pull &&
-    docker compose up -d --remove-orphans"
+    - scp -o StrictHostKeyChecking=no ./compose.yaml ubuntu@$SERVER_IP:/home/ubuntu/frontend/
+    - ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "cd /home/ubuntu/frontend && docker compose pull && docker compose up -d --remove-orphans"
