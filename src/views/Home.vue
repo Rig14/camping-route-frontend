@@ -51,6 +51,10 @@ const fetchCampingRoutes = async (page: number) => {
 
     for (let i = 0; i < content.length; i++) {
       const route = content[i];
+      if (route.id === undefined) {
+        console.error('Route ID is undefined', route);
+        continue;
+      }
       const images = await getImageUrlsForId(route.id, axios)
       routes.value.push({
         images: images,
