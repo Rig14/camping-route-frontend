@@ -49,14 +49,14 @@ const fetchCampingRoutes = async (page: number) => {
       totalElements: responseTotalElements,
     } = response.data;
 
-    const routesWithImages = await Promise.all(
-        content.map(async (route) => {
-          const images = await getImageUrlsForId(route.id, axios);
-          return { images, route };
-        })
-    );
-
-    routes.value = routesWithImages;
+    for (let i = 0; i < content.length; i++) {
+      const route = content[i];
+      const images = await getImageUrlsForId(route.id, axios)
+      routes.value.push({
+        images: images,
+        route: route
+      })
+    }
 
     totalPages.value = responseTotalPages;
     totalElements.value = responseTotalElements;

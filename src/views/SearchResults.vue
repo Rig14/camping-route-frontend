@@ -51,9 +51,8 @@ const fetchSearchResults = async (query: string, page: number) => {
       route,
     }));
 
-    for (let i = 0; i < response.data.length; i++) {
-      const route = response.data[i];
-      if (route.id === undefined) continue;
+    for (let i = 0; i < content.length; i++) {
+      const route = content[i];
       const images = await getImageUrlsForId(route.id, axios)
       searchResults.value.push({
         images: images,
