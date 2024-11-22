@@ -72,7 +72,7 @@ const fetchSearchResults = async (query: string, page: number) => {
 };
 
 onMounted(() => {
-  const keywordParam = route.query.find as string | undefined;
+  const keywordParam = route.query.find as string;
   const pageParam = parseInt(route.query.page as string) || 1;
   currentPage.value = pageParam;
   if (keywordParam) {
@@ -87,7 +87,7 @@ watch(
     (newQuery) => {
       console.log(route.query)
       console.log("watch initiated")
-      const keywordParam = newQuery.find as string | undefined;
+      const keywordParam = newQuery.find as string;
       console.log(keywordParam)
       const pageParam = parseInt(newQuery.page as string) || 1;
       console.log(pageParam)
