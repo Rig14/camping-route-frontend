@@ -43,6 +43,8 @@ const fetchCampingRoutes = async (page: number) => {
 
     console.log('Response:', response);
 
+    routes.value = [];
+
     const {
       content = [],
       totalPages: responseTotalPages,

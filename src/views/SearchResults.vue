@@ -20,7 +20,7 @@ if (axios === undefined) {
   throw new Error("Axios is not injected");
 }
 
-const searchResults = ref<{images: string[], route: CampingRouteDto}[]>([]);
+let searchResults = ref<{images: string[], route: CampingRouteDto}[]>([]);
 const isLoading = ref(false);
 
 const searchKeyword = ref<string | undefined>(undefined); // saving this and using it for pagination
@@ -41,15 +41,12 @@ const fetchSearchResults = async (query: string, page: number) => {
     });
     console.log('Response:', response);
 
+    searchResults.value = [];
+
     const { content = [],
       totalPages: responseTotalPages,
       totalElements:  responseTotalElements
     } = response.data;
-
-    searchResults.value = content.map((route) => ({
-      images: [], // Placeholder for images, if needed later
-      route,
-    }));
 
     for (let i = 0; i < content.length; i++) {
       const route = content[i];
@@ -63,6 +60,7 @@ const fetchSearchResults = async (query: string, page: number) => {
         route: route
       })
     }
+
     totalPages.value = responseTotalPages
     totalElements.value = responseTotalElements
     console.log(totalElements);
