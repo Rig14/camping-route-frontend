@@ -25,7 +25,7 @@ const isLoading = ref(false);
 const currentPage = ref<number>(1);
 const totalPages = ref<number>(1);
 const totalElements = ref<number>(1);
-const pageSize = 5; // Adjust the number of items per page as needed
+const pageSize = 6; // Adjust the number of items per page as needed
 
 const fetchCampingRoutes = async (page: number) => {
   isLoading.value = true;
@@ -116,17 +116,19 @@ const nextPage = () => {
     <div v-if="isLoading">Loading...</div>
     <div v-else-if="routes.length === 0">No results found.</div>
     <div v-else>
-      <div v-for="item in routes" :key="item.route.id" class="flex flex-col gap-1">
-        <RouterLink :to=" {name: 'CampingRoute', params: {id: item.route.id}} ">
-          <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
-        </RouterLink>
+      <div class="grid grid-cols-2 gap-6">
+        <div v-for="item in routes" :key="item.route.id">
+          <RouterLink :to=" {name: 'CampingRoute', params: {id: item.route.id}} ">
+            <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
+          </RouterLink>
+        </div>
       </div>
       <!-- Pagination Controls -->
       <div class="px-6 py-4 flex justify-center items-center">
         <button
-            @click="prevPage"
             :disabled="currentPage === 1"
             class="px-4 py-2 rounded disabled:opacity-50 mr-2"
+            @click="prevPage"
         >
           Previous
         </button>
@@ -134,9 +136,9 @@ const nextPage = () => {
         Page {{ currentPage }} of {{ totalPages }}
       </span>
         <button
-            @click="nextPage"
             :disabled="currentPage === totalPages"
             class="px-4 py-2 rounded disabled:opacity-50 ml-2"
+            @click="nextPage"
         >
           Next
         </button>
