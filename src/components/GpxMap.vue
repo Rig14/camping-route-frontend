@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {defineProps, inject, onMounted, ref, watch} from 'vue';
-import {Axios} from 'axios';
+import { defineProps, inject, onMounted, ref, watch, nextTick } from 'vue';
+import { Axios } from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-gpx';
@@ -32,6 +32,8 @@ const displayGpxRoute = async () => {
 
     if (!hasGpxFile.value) return;
 
+    await nextTick();
+
     if (!mapContainer.value) return;
 
     if (gpxLayer) {
@@ -58,6 +60,8 @@ const displayGpxRoute = async () => {
       map?.fitBounds(e.target.getBounds());
     }).addTo(map!);
 
+    map.invalidateSize();
+
   } catch (error) {
     console.error('Error fetching or displaying GPX route:', error);
     hasGpxFile.value = false;
@@ -68,8 +72,9 @@ watch(() => props.campingRouteId, displayGpxRoute);
 onMounted(displayGpxRoute);
 </script>
 
+
 <template>
-  <div class="bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md p-6">
+  <div v-show="hasGpxFile" class="bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md p-6">
     <h2 class="text-2xl font-semibold mb-4">Matkaraja kaart</h2>
     <div ref="mapContainer" class="h-96 w-full rounded-lg z-0"></div>
   </div>
