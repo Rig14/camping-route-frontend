@@ -5,6 +5,7 @@ export function useAuth() {
   const authStore = useAuthStore()
 
   const isLoggedIn = computed(() => authStore.isLoggedIn);
+  const getUserId = computed(() => authStore.getUserId);
   const showAuthOverlay = computed({
     get: () => authStore.showAuthOverlay,
     set: (value: boolean) => { authStore.showAuthOverlay = value; }
@@ -12,6 +13,7 @@ export function useAuth() {
 
   return {
     isLoggedIn,
+    getUserId,
     showAuthOverlay,
     login: authStore.login,
     signup: authStore.signup,
