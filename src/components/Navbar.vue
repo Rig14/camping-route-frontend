@@ -8,7 +8,7 @@ import {useAuth} from "../composables/useAuth.ts";
 const isMenuOpen = ref(false);
 const isSearchOpen = ref(false);
 const showAddCampingRouteOverlay = ref(false);
-const { isLoggedIn, logout, showAuthOverlay } = useAuth();
+const { isLoggedIn, showAuthOverlay, getUserId } = useAuth();
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -41,7 +41,9 @@ const handleShowAddCampingRouteOverlay = () => {
       <div class="gap-6 hidden md:flex">
         <button @click="handleShowAddCampingRouteOverlay">Lisa rada</button>
         <button v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
-        <button v-if="isLoggedIn" @click="logout">Logi välja</button>
+        <RouterLink v-if="isLoggedIn" :to="{name: 'Profile', params: {id: getUserId}}">
+          <button v-if="getUserId">Profile</button>
+        </RouterLink>
       </div>
       <div class="md:hidden flex gap-3">
         <button class="p-2 rounded-md text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" @click="toggleSearch">
