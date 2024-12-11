@@ -17,10 +17,11 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   actions: {
-    setToken(token: string) {
+    setToken(token: string, userId: number) {
       this.token = token;
       this.isAuthenticated = true;
       localStorage.setItem('user-token', token);
+      localStorage.setItem('user-id', String(userId));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     },
 
@@ -28,12 +29,13 @@ export const useAuthStore = defineStore('auth', {
       this.token = null;
       this.isAuthenticated = false;
       localStorage.removeItem('user-token');
+      localStorage.removeItem('user-id');
     },
 
     async login(userDto: UserDto) {
       try {
         const response: AxiosResponse<VerificationDto> = await axios.post('/api/public/user/verify', userDto);
-        this.setToken(response.data.token);
+        this.setToken(response.data.token, response.data.userId);
       } catch (error) {
         console.log("Error occurred during login: " + error);
       }
@@ -42,7 +44,7 @@ export const useAuthStore = defineStore('auth', {
     async signup(userDto: UserDto) {
       try {
         const response: AxiosResponse<VerificationDto> = await axios.post('/api/public/user', userDto);
-        this.setToken(response.data.token);
+        this.setToken(response.data.token , response.data.userId);
       } catch (error) {
         console.log("Error occurred during signup: " + error);
       }
@@ -57,6 +59,9 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isLoggedIn(): boolean {
       return this.isAuthenticated && !!this.token;
-    }
+    },
+    getUserId(): string | null {
+      return localStorage.getItem('user-id');
+    },
   }
 });
