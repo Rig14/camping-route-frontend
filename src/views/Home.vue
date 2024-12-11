@@ -111,7 +111,7 @@ const nextPage = () => {
     <div v-if="isLoading">Loading...</div>
     <div v-else-if="routes.length === 0">No results found.</div>
     <div v-else>
-      <div class="grid grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="item in routes" :key="item.route.id">
           <RouterLink :to=" {name: 'CampingRoute', params: {id: item.route.id}} ">
             <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
