@@ -39,10 +39,10 @@ const handleShowAddCampingRouteOverlay = () => {
       </div>
       <SearchBar class="w-full max-w-md hidden md:block" />
       <div class="gap-6 hidden md:flex">
-        <button @click="handleShowAddCampingRouteOverlay">Lisa rada</button>
-        <button v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
+        <button class="text-nowrap" @click="handleShowAddCampingRouteOverlay">Lisa rada</button>
+        <button class="text-nowrap" v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
         <RouterLink v-if="isLoggedIn" :to="{name: 'Profile', params: {id: getUserId}}">
-          <button v-if="getUserId">Profile</button>
+          <button v-if="getUserId">Profiil</button>
         </RouterLink>
       </div>
       <div class="md:hidden flex gap-3">
@@ -64,7 +64,9 @@ const handleShowAddCampingRouteOverlay = () => {
       <div class="flex flex-col gap-3 px-2 pt-2 pb-3 space-y-1 sm:px-3">
         <button @click="showAddCampingRouteOverlay = true">Lisa rada</button>
         <button v-if="!isLoggedIn" @click="showAuthOverlay = true">Logi sisse</button>
-        <button v-if="isLoggedIn" @click="logout">Logi välja</button>
+        <RouterLink v-if="isLoggedIn" :to="{name: 'Profile', params: {id: getUserId}}">
+          <button class="w-full" v-if="getUserId">Profiil</button>
+        </RouterLink>
       </div>
     </div>
     <div v-if="isSearchOpen" class="absolute top-0 left-0 right-0 bg-emerald-800 p-2 flex justify-between items-center gap-5">
