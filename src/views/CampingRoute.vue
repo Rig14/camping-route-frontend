@@ -143,7 +143,7 @@ onMounted(() => {
                 :src="url"
                 :key="url"
                 class="w-full h-64 object-cover"
-                alt="Camping route image"
+                alt="Camping route"
             />
           </div>
         </div>
