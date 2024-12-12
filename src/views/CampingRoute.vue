@@ -251,7 +251,7 @@ onMounted(() => {
           <li
               v-for="(comment, index) in comments"
               :key="index"
-              class="p-4 bg-gray-700 rounded-lg"
+              class="p-4 bg-gray-700 rounded-lg flex items-center justify-center"
           >
             <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" />
           </li>

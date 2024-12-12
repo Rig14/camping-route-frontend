@@ -13,7 +13,7 @@ defineProps<{ comment: CommentDto, removeComment: Promise<void>}>();
 </script>
 
 <template>
-  <div class="relative mb-5 max-w-sm rounded-2xl overflow-hidden shadow-lg border border-gray-400">
+  <div class="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-lg border border-gray-400">
     <div class="px-6 py-4">
       <p class="text-gray-500 text-sm">Anonüümne kasutaja</p>
       <p class="text-gray-200 text-base">

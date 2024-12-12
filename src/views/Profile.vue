@@ -232,7 +232,7 @@ watch(
           </button>
         </div>
       </div>
-      <div v-if="viewSelection == 'comments'">
+      <div v-if="viewSelection == 'comments'" class="flex gap-4 flex-col">
         <div v-for="comment in comments" :key="comment.id">
           <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" />
         </div>
