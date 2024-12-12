@@ -9,6 +9,7 @@ import { useAuth } from "../composables/useAuth.ts";
 import {ViewsDto} from "../types/dto/ViewsDto.ts";
 import GpxMap from "../components/GpxMap.vue";
 import {ImageUrl} from "../types/ImageUrl.ts";
+import CommentCard from "../components/CommentCard.vue";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
@@ -125,6 +126,21 @@ const deleteImage = async (url: string) =>  {
   }
 }
 
+const removeComment = async (id: number | undefined) => {
+  if (id === undefined) {
+    console.error("Comment ID is undefined");
+    return;
+  }
+
+  try {
+    await axios.delete(`/api/camping_routes/comments/single/${id}`);
+
+    comments.value = comments.value.filter((comment) => comment.id !== id);
+  } catch (error) {
+    console.error("Error removing comment: " + error);
+  }
+};
+
 
 onMounted(() => {
   updateViewCount();
@@ -237,8 +253,7 @@ onMounted(() => {
               :key="index"
               class="p-4 bg-gray-700 rounded-lg"
           >
-            <p class="text-sm text-gray-400 mb-2">Ananüümne kasutaja</p>
-            <p class="text-base">{{ comment.content }}</p>
+            <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" />
           </li>
         </ul>
       </div>

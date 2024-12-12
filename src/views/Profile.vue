@@ -131,6 +131,21 @@ const switchView = (viewName: string) => {
   viewSelection.value = viewName;
 }
 
+const removeComment = async (id: number | undefined) => {
+  if (id === undefined) {
+    console.error("Comment ID is undefined");
+    return;
+  }
+
+  try {
+    await axios.delete(`/api/camping_routes/comments/single/${id}`);
+
+    comments.value = comments.value.filter((comment) => comment.id !== id);
+  } catch (error) {
+    console.error("Error removing comment: " + error);
+  }
+};
+
 onMounted(() => {
   fetchUser();
   fetchUserComments();
@@ -219,7 +234,7 @@ watch(
       </div>
       <div v-if="viewSelection == 'comments'">
         <div v-for="comment in comments" :key="comment.id">
-          <CommentCard :comment="comment" />
+          <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" />
         </div>
       </div>
     </div>
