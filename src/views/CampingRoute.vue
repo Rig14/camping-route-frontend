@@ -6,6 +6,10 @@ import { getImageUrlsForId } from "../util/images";
 import { useAuth } from "../composables/useAuth";
 import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import { CommentDto } from "../types/dto/CommentDto";
+import CommentCard from "../components/CommentCard.vue";
+import { getImageUrlsForId } from "../util/images.ts";
+import { useAuth } from "../composables/useAuth.ts";
+import {ViewsDto} from "../types/dto/ViewsDto.ts";
 import GpxMap from "../components/GpxMap.vue";
 
 const axios = inject<Axios>('axios');
@@ -16,6 +20,7 @@ if (axios === undefined) {
 const campingRoute = ref<CampingRouteDto>();
 const campingRouteImageURLs = ref<string[]>([]);
 const comments = ref<CommentDto[]>([]);
+const viewsCount = ref<number>(0);
 const route = useRoute();
 const router = useRouter();
 const { isLoggedIn, showAuthOverlay } = useAuth();
@@ -46,14 +51,13 @@ const fetchComments = async () => {
 };
 
 const fetchCampingRouteImages = async () => {
-  campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios);
-  console.log(campingRouteImageURLs)
-};
+  campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios)
+}
 
 const submitComment = async () => {
   try {
     await addComment(commentContent.value);
-    commentContent.value = "";
+    commentContent.value = '';
     showCommentForm.value = false;
 
     await fetchComments();
@@ -87,20 +91,38 @@ const deleteRoute = async () => {
     return;
   }
 
+  await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`).catch((e) => {console.error(e)});
+  await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`).catch((e) => {console.error(e)});
+  await axios.delete<HttpStatusCode>(`/api/camping_routes/gpx/${route.params.id}`).catch((e) => {console.error(e)});
+  await router.push("/");
+};
+
+const fetchViewCount = async () => {
   try {
-    await axios.delete<HttpStatusCode>(`/api/camping_routes/gpx/${route.params.id}`);
-    await axios.delete<HttpStatusCode>(`/api/camping_routes/images/${route.params.id}`);
-    await axios.delete<HttpStatusCode>(`/api/camping_routes/${route.params.id}`);
-    router.push("/");
+    const res = await axios.get<ViewsDto>(`/api/public/camping_routes/views/${route.params.id}`);
+    viewsCount.value = res.data.viewsCount;
   } catch (error) {
-    console.error("Error deleting camping route: ", error);
+    console.error("Error updating view count: ", error);
   }
 };
 
+const updateViewCount = async () => {
+  try {
+    await axios.post(`/api/public/camping_routes/views/${route.params.id}`);
+  } catch (error) {
+    console.error("Error updating view count: ", error);
+  }
+};
+
+const showCommentForm = ref<boolean>(false);
+const commentContent = ref<string>('');
+
 onMounted(() => {
+  updateViewCount();
   fetchRoute();
   fetchComments();
   fetchCampingRouteImages();
+  fetchViewCount();
 });
 </script>
 
