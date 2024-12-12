@@ -4,10 +4,11 @@ import { Axios, HttpStatusCode } from "axios";
 import { useRoute, useRouter } from "vue-router";
 import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import { CommentDto } from "../types/dto/CommentDto";
-import { getImageUrlsForId } from "../util/images.ts";
+import {getImageUrlsAndDeleteUrlsForCampingRouteId, getImageUrlsForId} from "../util/images.ts";
 import { useAuth } from "../composables/useAuth.ts";
 import {ViewsDto} from "../types/dto/ViewsDto.ts";
 import GpxMap from "../components/GpxMap.vue";
+import {ImageUrl} from "../types/ImageUrl.ts";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
@@ -15,7 +16,7 @@ if (axios === undefined) {
 }
 
 const campingRoute = ref<CampingRouteDto>();
-const campingRouteImageURLs = ref<string[]>([]);
+const campingRouteImageURLs = ref<ImageUrl[]>([]);
 const comments = ref<CommentDto[]>([]);
 const viewsCount = ref<number>(0);
 const route = useRoute();
@@ -50,7 +51,7 @@ const fetchComments = async () => {
 };
 
 const fetchCampingRouteImages = async () => {
-  campingRouteImageURLs.value = await getImageUrlsForId(route.params.id as string, axios)
+  campingRouteImageURLs.value = await getImageUrlsAndDeleteUrlsForCampingRouteId(route.params.id as string, axios);
 }
 
 const submitComment = async () => {
@@ -115,6 +116,15 @@ const updateViewCount = async () => {
   }
 };
 
+const deleteImage = async (url: string) =>  {
+  try {
+    await axios.delete(url);
+    campingRouteImageURLs.value = campingRouteImageURLs.value.filter((imageUrl) => imageUrl.deleteUrl !== url);
+  } catch (error) {
+    console.error("Error deleting image: ", error);
+  }
+}
+
 
 onMounted(() => {
   updateViewCount();
@@ -138,13 +148,17 @@ onMounted(() => {
 
         <div class="bg-gradient-to-tl from-green-950 to-gray-900 rounded-xl shadow-md overflow-hidden">
           <div class="grid grid-cols-1 gap-2">
-            <img
-                v-for="url in campingRouteImageURLs"
-                :src="url"
-                :key="url"
-                class="w-full h-64 object-cover"
-                alt="Camping route"
-            />
+            <div v-for="url in campingRouteImageURLs" class="relative">
+              <img
+                  :key="url.imageUrl"
+                  :src="url.imageUrl"
+                  alt="Camping route"
+                  class="w-full h-64 object-cover"
+              />
+              <button class="absolute cursor-pointer z-40 top-1 right-1 bg-red-600 rounded-full p-2 size-8 flex justify-center items-center" @click="deleteImage(url.deleteUrl)">
+                x
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -179,7 +193,7 @@ onMounted(() => {
           </span>
 
       <div>
-        <GpxMap :campingRouteId="route.params.id as string" v-model:hasGpxFile="hasGpxFile" />
+        <GpxMap v-model:hasGpxFile="hasGpxFile" :campingRouteId="route.params.id as string" />
       </div>
 
       <div class="flex space-x-4">
@@ -198,7 +212,7 @@ onMounted(() => {
       </div>
 
       <div v-if="showCommentForm" class="bg-gray-800 p-6 rounded-lg">
-        <form @submit.prevent="submitComment" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="submitComment">
           <input
               v-model="commentContent"
               class="w-full p-4 border border-gray-300 rounded-lg"
@@ -207,8 +221,8 @@ onMounted(() => {
               type="text"
           />
           <button
-              type="submit"
               class="px-6 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition"
+              type="submit"
           >
             Saada sõnum
           </button>
