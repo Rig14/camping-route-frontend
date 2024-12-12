@@ -4,13 +4,12 @@ import { Axios, HttpStatusCode } from "axios";
 import { useRoute, useRouter } from "vue-router";
 import { CampingRouteDto } from "../types/dto/CampingRouteDto";
 import { CommentDto } from "../types/dto/CommentDto";
-import {getImageUrlsAndDeleteUrlsForCampingRouteId, getImageUrlsForId} from "../util/images.ts";
+import {getImageUrlsAndDeleteUrlsForCampingRouteId} from "../util/images.ts";
 import { useAuth } from "../composables/useAuth.ts";
 import {ViewsDto} from "../types/dto/ViewsDto.ts";
 import GpxMap from "../components/GpxMap.vue";
 import {ImageUrl} from "../types/ImageUrl.ts";
 import CommentCard from "../components/CommentCard.vue";
-import {useAuthStore} from "../stores/authStore.ts";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
