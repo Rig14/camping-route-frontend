@@ -5,12 +5,7 @@ import { Axios } from 'axios';
 import { CampingRouteDto } from '../types/dto/CampingRouteDto';
 import CampingRouteCard from '../components/CampingRouteCard.vue';
 import { getImageUrlsForId } from '../util/images.ts';
-
-interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-}
+import {PageResponse} from "../types/dto/PageRespone.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -51,8 +46,8 @@ const fetchCampingRoutes = async (page: number) => {
       totalElements: responseTotalElements,
     } = response.data;
 
-    for (let i = 0; i < content.length; i++) {
-      const route = content[i];
+    for (const element of content) {
+      const route = element;
       if (route.id === undefined) {
         console.error('Route ID is undefined', route);
         continue;
@@ -116,7 +111,7 @@ const nextPage = () => {
     <div v-if="isLoading">Loading...</div>
     <div v-else-if="routes.length === 0">No results found.</div>
     <div v-else>
-      <div class="grid grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="item in routes" :key="item.route.id">
           <RouterLink :to=" {name: 'CampingRoute', params: {id: item.route.id}} ">
             <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
