@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { defineProps, inject, onMounted, ref, watch, nextTick } from 'vue';
+import { inject, onMounted, ref, watch, nextTick } from 'vue';
 import { Axios } from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -17,6 +17,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(["update:hasGpxFile"]);
+
 const mapContainer = ref<HTMLDivElement | null>(null);
 const hasGpxFile = ref(false);
 let map: L.Map | null = null;
@@ -29,6 +31,8 @@ const displayGpxRoute = async () => {
     });
 
     hasGpxFile.value = response.data.size > 0;
+
+    emit("update:hasGpxFile", hasGpxFile.value);
 
     if (!hasGpxFile.value) return;
 
@@ -49,29 +53,29 @@ const displayGpxRoute = async () => {
       }).addTo(map);
     }
 
-    gpxLayer = new L.GPX(gpxUrl, {
+    gpxLayer = new (L as any).GPX(gpxUrl, {
       async: true,
       marker_options: {
         startIconUrl: '/marker-start.png',
         endIconUrl: '/marker-end.png',
         shadowUrl: '/marker-shadow.png'
       }
-    }).on('loaded', function(e) {
+    }).on('loaded', function(e: L.LayerEvent) {
       map?.fitBounds(e.target.getBounds());
-    }).addTo(map!);
+    }).addTo(map);
 
     map.invalidateSize();
 
   } catch (error) {
     console.error('Error fetching or displaying GPX route:', error);
     hasGpxFile.value = false;
+    emit("update:hasGpxFile", false);
   }
 };
 
 watch(() => props.campingRouteId, displayGpxRoute);
 onMounted(displayGpxRoute);
 </script>
-
 
 <template>
   <div v-show="hasGpxFile" class="bg-gradient-to-tl from-green-950 to-gray-900 text-white rounded-xl shadow-md p-6">
