@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import {ref, reactive, inject} from 'vue';
 import {Axios} from "axios";
 import {CampingRouteDto} from "../types/dto/CampingRouteDto.ts";
@@ -15,6 +15,7 @@ const routeForm = reactive<CampingRouteDto>({
   description: '',
   location: '',
   thumbnailUrl: '',
+  userID: 0
 });
 
 const images = ref<File[]>([]);
@@ -98,53 +99,53 @@ function deleteImage(imageUrl: string) {
         @click.stop
     >
       <button
-          @click="emit('close')"
-          class="absolute right-4 top-4 text-white text-lg hover:text-red-300 py-0.5 px-1.5 rounded-full bg-transparent"
           aria-label="Close"
+          class="absolute right-4 top-4 text-white text-lg hover:text-red-300 py-0.5 px-1.5 rounded-full bg-transparent"
+          @click="emit('close')"
       >
         ✕
       </button>
 
       <p class="text-center text-white font-bold text-lg mb-5">Lisa uus matkarada</p>
 
-      <form @submit.prevent="submitForm" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="submitForm">
         <input
             v-model="routeForm.name"
-            placeholder="Nimi"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-800 focus:border-transparent"
+            placeholder="Nimi"
             required
         />
         <input
             v-model="routeForm.description"
-            placeholder="Kirjeldus"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-800 focus:border-transparent"
+            placeholder="Kirjeldus"
             required
         />
         <input
             v-model="routeForm.location"
-            placeholder="Asukoht"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-800 focus:border-transparent"
+            placeholder="Asukoht"
             required
         />
 
-        <label for="" class="block text-center text-white">Lisa pildid</label>
+        <label class="block text-center text-white" for="">Lisa pildid</label>
         <div class="relative border-2 border-dashed rounded-lg p-4 bg-gray-700 cursor-pointer">
           <input
-              type="file"
               accept="image/*"
-              multiple
               class="absolute inset-0 opacity-0 cursor-pointer"
+              multiple
+              type="file"
               @change="handleAddImage"
           />
           <p class="text-gray-400 text-center">Vali või lohista pildid siia (SVG, PNG, JPG, JPEG)</p>
         </div>
 
-        <label for="" class="block text-center text-white mt-4">Lisa GPX-fail</label>
+        <label class="block text-center text-white mt-4" for="">Lisa GPX-fail</label>
         <div class="relative border-2 border-dashed rounded-lg p-4 bg-gray-700 cursor-pointer">
           <input
-              type="file"
               accept=".gpx"
               class="absolute inset-0 opacity-0 cursor-pointer"
+              type="file"
               @change="handleAddGpxFile"
           />
           <p class="text-gray-400 text-center">Vali või lohista GPX-fail siia</p>
@@ -152,7 +153,7 @@ function deleteImage(imageUrl: string) {
 
         <div v-if="gpxFile" class="mt-4 flex items-center justify-between bg-gray-800 text-white px-3 py-2 rounded-md">
           <p>{{ gpxFile.name }}</p>
-          <button @click="removeGpxFile" class="text-red-400 hover:text-red-600">✕</button>
+          <button class="text-red-400 hover:text-red-600" @click="removeGpxFile">✕</button>
         </div>
 
         <p v-if="formError" class="text-red-500 text-sm mt-2 text-center">{{ formError }}</p>
@@ -160,8 +161,8 @@ function deleteImage(imageUrl: string) {
         <div class="grid grid-cols-5 gap-2 mt-4">
           <div v-for="image in imagesAsURLs" :key="image" class="relative">
             <button
-                @click="deleteImage(image)"
                 class="absolute -left-2 -top-2 p-1 bg-red-600 rounded-full"
+                @click="deleteImage(image)"
             >✕
             </button>
             <img :src="image" alt="Route" class="w-full h-auto rounded-md"/>
@@ -169,8 +170,8 @@ function deleteImage(imageUrl: string) {
         </div>
 
         <button
-            type="submit"
             class="w-full bg-emerald-800 text-white py-2 px-4 rounded-md hover:bg-emerald-900"
+            type="submit"
         >
           Loo uus matkarada
         </button>
