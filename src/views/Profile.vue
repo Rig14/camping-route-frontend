@@ -158,9 +158,16 @@ watch(
     <div v-if="isLoading">Loading...</div>
     <div v-else-if="userCampingRoutes.length == 0">No results found.</div>
     <div v-else>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="item in userCampingRoutes" :key="item.route.id" class="flex flex-col gap-1">
-          <RouterLink :to=" {name: 'CampingRoute', params: {id: item.route.id}} ">
+      <div
+          :class="[
+      'grid gap-6',
+      userCampingRoutes.length === 1
+        ? 'grid-cols-1 place-items-center'
+        : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+    ]"
+      >
+        <div v-for="item in userCampingRoutes" :key="item.route.id">
+          <RouterLink :to="{ name: 'CampingRoute', params: { id: item.route.id } }">
             <CampingRouteCard :camping-route="item.route" :image-urls="item.images" />
           </RouterLink>
         </div>
