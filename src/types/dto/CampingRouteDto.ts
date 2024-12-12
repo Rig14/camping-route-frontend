@@ -4,4 +4,5 @@ export interface CampingRouteDto  {
     description: string;
     location: string;
     thumbnailUrl: string;
+    userID: number
 }

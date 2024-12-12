@@ -10,6 +10,7 @@ import {ViewsDto} from "../types/dto/ViewsDto.ts";
 import GpxMap from "../components/GpxMap.vue";
 import {ImageUrl} from "../types/ImageUrl.ts";
 import CommentCard from "../components/CommentCard.vue";
+import {useAuthStore} from "../stores/authStore.ts";
 
 const axios = inject<Axios>('axios');
 if (axios === undefined) {
@@ -26,6 +27,8 @@ const { isLoggedIn, showAuthOverlay } = useAuth();
 
 const showCommentForm = ref<boolean>(false);
 const commentContent = ref<string>("");
+
+const auth = useAuth();
 
 const hasGpxFile = ref(false);
 
@@ -142,6 +145,17 @@ const removeComment = async (id: number | undefined) => {
 };
 
 
+const shouldShowDelete = () => {
+  if (auth.getUserId.value == null) {
+    return false;
+  }
+  if (campingRoute.value == undefined) {
+    return false;
+  }
+
+  return campingRoute.value.userID == auth.getUserId.value as unknown as number;
+}
+
 onMounted(() => {
   updateViewCount();
   fetchRoute();
@@ -171,7 +185,7 @@ onMounted(() => {
                   alt="Camping route"
                   class="w-full h-64 object-cover"
               />
-              <button class="absolute cursor-pointer z-40 top-1 right-1 bg-red-600 rounded-full p-2 size-8 flex justify-center items-center" @click="deleteImage(url.deleteUrl)">
+              <button v-if="shouldShowDelete()" class="absolute cursor-pointer z-40 top-1 right-1 bg-red-600 rounded-full p-2 size-8 flex justify-center items-center" @click="deleteImage(url.deleteUrl)">
                 x
               </button>
             </div>
@@ -214,6 +228,7 @@ onMounted(() => {
 
       <div class="flex space-x-4">
         <button
+            v-if="shouldShowDelete()"
             class="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-500 transition"
             @click="deleteRoute"
         >
@@ -253,7 +268,7 @@ onMounted(() => {
               :key="index"
               class="p-4 bg-gray-700 rounded-lg flex items-center justify-center"
           >
-            <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" />
+            <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" :should-show-delete="shouldShowDelete" />
           </li>
         </ul>
       </div>

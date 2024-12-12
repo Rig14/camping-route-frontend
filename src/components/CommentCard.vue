@@ -8,7 +8,7 @@ if (axios === undefined) {
   throw new Error("Axios is not injected")
 }
 
-defineProps<{ comment: CommentDto, removeComment: Promise<void>}>();
+defineProps<{ comment: CommentDto, removeComment: (id: (number | undefined)) => Promise<void>, shouldShowDelete: () => boolean}>();
 
 </script>
 
@@ -20,7 +20,7 @@ defineProps<{ comment: CommentDto, removeComment: Promise<void>}>();
         {{ comment.content }}
       </p>
     </div>
-    <button class="top-2 right-2 bg-red-600 absolute rounded-full p-2 size-8 flex justify-center items-center transition hover:bg-red-800" @click="removeComment(comment.id)">
+    <button v-if="shouldShowDelete()" class="top-2 right-2 bg-red-600 absolute rounded-full p-2 size-8 flex justify-center items-center transition hover:bg-red-800" @click="removeComment(comment.id)">
       x
     </button>
   </div>

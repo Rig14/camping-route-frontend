@@ -21,6 +21,8 @@ if (!axios) {
 const route = useRoute();
 const router = useRouter();
 
+const auth = useAuth();
+
 const user = ref<UserDto>();
 const userCampingRoutes = ref<{ images: string[]; route: CampingRouteDto }[]>([]);
 
@@ -146,6 +148,14 @@ const removeComment = async (id: number | undefined) => {
   }
 };
 
+const shouldShowDelete = () => {
+  if (auth.getUserId.value == null) {
+    return false;
+  }
+
+  return auth.getUserId.value == route.params.id;
+}
+
 onMounted(() => {
   fetchUser();
   fetchUserComments();
@@ -234,7 +244,7 @@ watch(
       </div>
       <div v-if="viewSelection == 'comments'" class="flex gap-4 flex-col">
         <div v-for="comment in comments" :key="comment.id">
-          <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" />
+          <CommentCard :comment="comment" :remove-comment="() => removeComment(comment.id)" :should-show-delete="shouldShowDelete" />
         </div>
       </div>
     </div>
