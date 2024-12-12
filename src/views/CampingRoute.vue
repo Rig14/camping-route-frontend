@@ -179,7 +179,7 @@ onMounted(() => {
           </span>
 
       <div>
-        <GpxMap :campingRouteId="route.params.id" v-model:hasGpxFile="hasGpxFile" />
+        <GpxMap :campingRouteId="route.params.id as String" v-model:hasGpxFile="hasGpxFile" />
       </div>
 
       <div class="flex space-x-4">
